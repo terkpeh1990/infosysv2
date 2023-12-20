@@ -3,8 +3,8 @@ version: '3.8'
 services:
   django_gunicorn:
     volumes:
-      - static:/assets
-      - media:/media
+      - ./django_project:/usr/src/erp
+      # - ./django_project/media:/media
     env_file:
       - .env
     build:
@@ -17,8 +17,8 @@ services:
   nginx:
     build: ./nginx
     volumes:
-      - static:/assets
-      - media:/media
+      - ./django_project/:/var/www/html/erp
+      # - ./media:/media
     ports:
       - "80:80"
     depends_on:
@@ -37,5 +37,5 @@ services:
       
 volumes:
   postgres_data:
-  static:
-  media:
+  # static:
+  # media:

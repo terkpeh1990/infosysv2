@@ -17,3 +17,5 @@ layout/__pycache__
 layout/migrations/__pycache__
 node_modules
 gulpfile
+.env
+

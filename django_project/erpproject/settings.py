@@ -62,6 +62,7 @@ INSTALLED_APPS = [
     'helpdesk.apps.HelpdeskConfig',
     'accounting.apps.AccountingConfig',
     'dms.apps.DmsConfig',
+    'supply_chain.apps.SupplyChainConfig',
     
     # Third Party App
     'crispy_forms',

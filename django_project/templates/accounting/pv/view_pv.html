@@ -91,6 +91,10 @@
                                 {% #td name ="headsupplier" %}Address :{% /td %}
                                 {% #td name ="username" %}{{ pv.pay_to_address }}{% /td %}
                             {% /tr  %} 
+                            {% #tr name ="address" %}
+                                {% #td name ="headsupplier" %}<b>Transaction Currency :</b>{% /td %}
+                                {% #td name ="username" %}<b> {{ pv.currency_id.name }} ( {{ pv.currency_id.symbol }})</b>{% /td %}
+                            {% /tr  %} 
                             
                             
                     {% /tbody %}
@@ -118,7 +122,7 @@
                                         <td>{{data.accout_code.account_sub_item_id.code}}</td>
                                         <td>{{data.accout_code.code}}</td>
                                         <td>{{data.description}}</td>
-                                        <td class="text-end">{{pv.currency_id.symbol }} {{ data.amount|floatformat:2|intcomma }}</td>
+                                        <td class="text-end"> {{ data.amount|floatformat:2|intcomma }}</td>
                                       
                                     </tr>
                                 {% endfor %}
@@ -130,7 +134,7 @@
                                         <td class="border-0"></td>
                                         <td colspan="2" class="border-0 text-end"><strong>Sub Total</strong></td>
                                         <td class="border-0 text-end"><h5 class="m-0">
-                                                {{pv.currency_id.symbol }} {{ sub_total|floatformat:2|intcomma }}
+                                                {{ sub_total|floatformat:2|intcomma }}
                                         </h5>
                                         </td>
                                 </tr>
@@ -140,7 +144,7 @@
                                     <td class="border-0"></td>
                                     <td colspan="2" class="border-0 text-end"><strong>Witholding Tax</strong></td>
                                     <td class="border-0 text-end"><h5 class="m-0">
-                                            {{pv.currency_id.symbol }} {{ tax|floatformat:2|intcomma }}
+                                             {{ tax|floatformat:2|intcomma }}
                                     </h5>
                                     </td>
                             </tr>
@@ -152,7 +156,7 @@
                                 
                                 <td colspan="2" class="border-0 text-end"><strong>Total</strong></td>
                                 <td class="border-0 text-end"><h5 class="m-0">
-                                        {{pv.currency_id.symbol }} {{ total|floatformat:2|intcomma }}
+                                        {{ total|floatformat:2|intcomma }}
                                 </h5>
                                 </td>
                             </tr>

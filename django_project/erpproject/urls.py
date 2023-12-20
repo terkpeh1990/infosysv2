@@ -31,7 +31,8 @@ urlpatterns = [
     path('inventory/', include('inventory.urls', namespace='inventory')), 
     path('company/', include('company.urls', namespace='company')), 
     path('accounting/',include('accounting.urls', namespace='accounting')),
-    path('dms/',include('dms.urls',namespace='dms'))
+    path('dms/',include('dms.urls',namespace='dms')),
+    path('supplychain/',include('supply_chain.urls',namespace='supplychain')),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

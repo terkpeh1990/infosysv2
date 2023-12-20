@@ -48,6 +48,8 @@
                                     <div class="dropdown-divider"></div>
                                         <a class="dropdown-item" href="{% url 'dms:filemanager-list' %}"><i class="bx bx-dollar-circle font-size-16 align-middle me-1"></i>Documents</a>
                                     <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item" href="{% url 'supplychain:annualbudget-list' %}"><i class="bx bx-dollar-circle font-size-16 align-middle me-1"></i>Supply Chain</a>
+                                    <div class="dropdown-divider"></div>
                                 {% else %}
                                     {% if perms.authentication.custom_create_user %}
                                         <a class="dropdown-item" href="{% url 'authentication:user-list' %}"><i class="bx bxs-user-detail font-size-16 align-middle me-1"></i>Authentication</a>
@@ -56,18 +58,22 @@
                                  {% for app in app_model  %}
                                     {% if app.app.name == 'Inventory' and app.status %}
                                             <a class="dropdown-item" href="{% url 'inventory:dashboard' %}"><i class="bx bx-spreadsheet font-size-16 align-middle me-1"></i> Inventory</a>
+                                            <div class="dropdown-divider"></div>
                                     {% endif %}
                                     {% if app.app.name  == 'Accounting' and app.status %}
-                                        <div class="dropdown-divider"></div>
+                                        
                                         <a class="dropdown-item" href="{% url 'accounting:accountclass-list' %}"><i class="bx bx-dollar-circle font-size-16 align-middle me-1"></i>Accounting</a>
-                                    
+                                        <div class="dropdown-divider"></div>
                                     {% endif %}
                                     {% if app.app.name  == 'Documents' and app.status %}
-                                        <div class="dropdown-divider"></div>
                                         <a class="dropdown-item" href="{% url 'dms:filemanager-list' %}"><i class="bx bx-dollar-circle font-size-16 align-middle me-1"></i>Documents</a>
-                                    
+                                        <div class="dropdown-divider"></div>
                                     {% endif %}
-                                    <div class="dropdown-divider"></div>
+                                    {% if app.app.name  == 'SupplyChain' and app.status %}
+                                        <a class="dropdown-item" href="{% url 'supplychain:annualbudget-list' %}"><i class="bx bx-dollar-circle font-size-16 align-middle me-1"></i>Supply Chain</a>
+                                        <div class="dropdown-divider"></div>
+                                    {% endif %}
+                                    <!-- <div class="dropdown-divider"></div> -->
                                    {% endfor %}
                                     {% endif %}
                                     
