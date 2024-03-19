@@ -14,11 +14,7 @@
                 <span key="t-products">Products</span>
                 </a>
                 <ul class="sub-menu" aria-expanded="false">
-                    {% if perms.inventory.custom_view_supplier %}
-                        <li>
-                            <a href="{% url 'inventory:supplier-list' %}" key="t-supplier">Suppliers</a>
-                        </li> 
-                {% endif %}
+                   
                 {% if perms.inventory.custom_view_category %}
                         <li>
                             <a href="{% url 'inventory:category-list' %}" key="t-category">Categories</a>
@@ -40,17 +36,13 @@
                         </li> 
                        
                     {% endif %}
+                    {% if perms.inventory.custom_view_supplier %}
+                        <li>
+                            <a href="{% url 'inventory:supplier-list' %}" key="t-supplier">Suppliers</a>
+                        </li> 
+                    {% endif %}
                     
-                    {% if perms.inventory.custom_view_restock %}
-                        <li>
-                            <a href="{% url 'inventory:restock-list' %}" key="t-product">Restock</a>
-                        </li> 
-                    {% endif %}
-                    {% if perms.inventory.custom_view_job_certification %}
-                        <li>
-                            <a href="{% url 'inventory:job-list' %}" key="t-product">Job Certification</a>
-                        </li> 
-                    {% endif %}
+                    
                     {% if perms.inventory.custom_view_product %}
                         <li>
                             <a href="{% url 'inventory:closing-stock' %}" key="t-product">Closing Stock</a>
@@ -61,6 +53,29 @@
                 </ul>
             </li>
           {% endif %}
+          {% if perms.inventory.custom_view_job_certification %}
+            <li>
+                <a href="javascript: void(0);" class="has-arrow waves-effect">
+                <i class="bx bx-data"></i>
+                <span key="t-products">Certififaction</span>
+                </a>
+                <ul class="sub-menu" aria-expanded="false">
+                    
+                {% if perms.inventory.custom_view_restock %}
+                    <li>
+                        <a href="{% url 'inventory:restock-list' %}" key="t-product">Consumable</a>
+                    </li> 
+                {% endif %}
+                {% if perms.inventory.custom_view_job_certification %}
+                    <li>
+                        <a href="{% url 'inventory:job-list' %}" key="t-product">Capital</a>
+                    </li> 
+                {% endif %}
+                
+                </ul>
+            </li>
+          {% endif %}
+          
           {% if perms.inventory.custom_view_requisition %}
           <li>
             <a href="javascript: void(0);" class="has-arrow waves-effect">

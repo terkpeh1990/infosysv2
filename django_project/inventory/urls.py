@@ -47,6 +47,8 @@ urlpatterns = [
     #supplier Start
     path('supplier/',supplier.supplier,name='supplier-list'),
     path('supplier/add/',supplier.add_supplier,name='new-supplier'),
+    path('supplier/<str:supplier_id>/products/',supplier.add_supplier_detail,name='supplier-products'),
+    path('supplier/<str:supplier_id>/prodduct/remove/',supplier.delete_supplier_item,name='remove-product'),
     path('supplier/<str:supplier_id>/update/',supplier.edit_supplier,name='edit-supplier'),
     path('supplier/<str:supplier_id>/delete/',supplier.delete_supplier,name='delete-supplier'),
     path('supplier/upload/',supplier.supplier_upload,name='upload-supplier'),

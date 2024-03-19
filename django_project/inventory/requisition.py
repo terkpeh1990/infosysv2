@@ -169,9 +169,10 @@ def edit_requisition_detail(request,requisition_id):
 @permission_required('inventory.custom_create_requisition',raise_exception = True)
 def delete_requisition_item(request,requisition_id):
     requisition= Requisition_Details.objects.get(id=requisition_id)
+    req = requisition.requisition_id.id
     requisition.delete()
     messages.error(request,'Item Deleted')
-    return redirect('inventory:add-requistion-details', requisition_id)
+    return redirect('inventory:add-requisition-details', req)
 
 login_required(login_url='authentication:login')
 @permission_required('inventory.custom_update_requisition',raise_exception = True)

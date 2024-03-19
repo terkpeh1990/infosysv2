@@ -225,36 +225,90 @@
                     
                         {% endif %}
                         {% if beneficiary %}
+                            <div class='row'>
+                                <div class="py-2 mt-3 m-2">
+                                    <h3 class="font-size-15 fw-bold">Beneficiaries</h3> 
+                                    <!-- <a class="card d-print-none text-primay" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Update Budget" href="{% url 'dms:document-beneficiary-upload' file.id %}" ><i class="mdi mdi-pencil-outline"></i></a> -->
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="table ">
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 70px;">No.</th>
+                                                <th>Name</th>
+                                                <th>Amount</th>
+                                                <!-- <th>Action</th> -->
+                                            
+                                                
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for data in beneficiary %}
+                                                <tr>
+                                                    <td>{{data.id}}</td>
+                                                    <td>{{data.staff.last_name }} {{data.staff.first_name}}</td>
+                                                    <td>
+                                                    {% if  budget  %} {{file.currency_id.symbol }} {% endif %}  {{data.amount|floatformat:2|intcomma}}
+                                                        
+                                                    </td>
+                                                
+                                                    <!-- <td>
+                                                        <a href="{% url 'dms:view-attachment' data.id %}" data-bs-title="View Attachemnt" class="btn btn-sm btn-soft-info"><i class="mdi mdi-eye-outline"></i></a>
+                                                    </td> -->
+                                                    
+                                                </tr>
+                                            {% endfor %}
+                                            
+                                            
+                                            
+                                            
+                                        </tbody>
+                                    </table>
+                                </div>   
+                            </div>
+                    
+                         {% endif %}
+                         {% if product %}
                         <div class='row'>
                             <div class="py-2 mt-3 m-2">
-                                <h3 class="font-size-15 fw-bold">Beneficiaries</h3> 
-                                <!-- <a class="card d-print-none text-primay" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Update Budget" href="{% url 'dms:document-beneficiary-upload' file.id %}" ><i class="mdi mdi-pencil-outline"></i></a> -->
+                                <!-- <h3 class="font-size-15 fw-bold">Beneficiaries</h3> <a class="card d-print-none text-primay" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Update Budget" href="{% url 'dms:document-beneficiary-upload' file.id %}" ><i class="mdi mdi-pencil-outline"></i></a> -->
                             </div>
                             <div class="table-responsive">
                                 <table class="table ">
                                     <thead>
                                         <tr>
-                                            <th style="width: 70px;">No.</th>
+                                            <th style="width: 70px;">ID.</th>
                                             <th>Name</th>
-                                            <th>Amount</th>
-                                            <!-- <th>Action</th> -->
+                                            <th>Status</th>
+                                            
+                                            <th>Action</th>
                                            
                                             
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {% for data in beneficiary %}
+                                        {% for data in product %}
                                             <tr>
                                                 <td>{{data.id}}</td>
-                                                <td>{{data.staff.last_name }} {{data.staff.first_name}}</td>
+                                                <td>{{data.product_id.name}} </td>
                                                 <td>
-                                                {% if  budget  %} {{file.currency_id.symbol }} {% endif %}  {{data.amount|floatformat:2|intcomma}}
+                                                    {% if data.status %}
+                                                        <span class="badge bg-info">Purchase Requisition Created</span>
                                                     
+                                                    {% else %}
+                                                        <span class="badge bg-danger">Yet To Create Purchase Requisition</span>   
+                                                    {% endif %}
                                                 </td>
+                                                
                                                
-                                                <!-- <td>
-                                                    <a href="{% url 'dms:view-attachment' data.id %}" data-bs-title="View Attachemnt" class="btn btn-sm btn-soft-info"><i class="mdi mdi-eye-outline"></i></a>
-                                                </td> -->
+                                                <td>
+                                                    {% if data.status %}
+                                                    {% else %}
+                                                        {% if perms.purchase_order.custom_create_purchase_requisition %}
+                                                            <a href="{% url 'purchaseorder:new-purchase-requisition' data.id %}" class="btn btn-soft-warning w-100">Create Purchase Requisiton</a>
+                                                        {% endif %}
+                                                    {% endif %}
+                                                </td>
                                                  
                                             </tr>
                                         {% endfor %}

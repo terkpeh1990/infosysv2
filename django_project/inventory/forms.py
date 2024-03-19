@@ -2,6 +2,7 @@ from django import forms
 from .models import *
 from django.forms.widgets import NumberInput
 from company.models import *
+from purchase_order.models import LocalPurchasingOrder
 
 class CategoryForm(forms.ModelForm):
     name = forms.CharField(label=False)
@@ -50,13 +51,18 @@ class MeasurementForm(forms.ModelForm):
 
 
 class ProductForm(forms.ModelForm):
+    sts= (
+        ('Capital','Capital'),
+        ('Consumables','Consumables'),
+         
+    )
     # brand_id =forms.ModelChoiceField(queryset=Brands.objects.all().order_by('name'),label=False,required=False)
     category_id =forms.ModelChoiceField(queryset=Categorys.objects.all().order_by('name'),label=False)
     name = forms.CharField(label=False)
     restock_level = forms.IntegerField(label=False)
     unit_of_measurement =forms.ModelChoiceField(queryset=Unit_of_Measurement.objects.order_by('name'),label=False)
     tenant_id = forms.ModelChoiceField(label=False, queryset=Tenants.objects.all(),required=False)
-
+    type_of_product= forms.ChoiceField(label=False,choices= sts)
     class Meta:
         model = Products
         fields = ('category_id','name','restock_level','unit_of_measurement','type_of_product','tenant_id')
@@ -91,10 +97,13 @@ class SupplierForm(forms.ModelForm):
     address = forms.CharField(label=False)
     city = forms.CharField(label=False)
     country = forms.CharField(label=False)
+    phone_number = forms.CharField(label=False)
+    supplier_email = forms.CharField(label=False)
+    
     tenant_id = forms.ModelChoiceField(label=False, queryset=Tenants.objects.all(),required=False)
     class Meta:
         model = Supplier
-        fields = ('name','address','city','country','tenant_id')
+        fields = ('name','address','city','country','phone_number','supplier_email','tenant_id')
 
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop("request")
@@ -112,10 +121,14 @@ class RestockForm(forms.ModelForm):
     supplier_id = forms.ModelChoiceField(label=False, queryset=Supplier.objects.all())
     driver_name = forms.CharField(label=False)
     driver_contact = forms.CharField(label=False)
+    note = forms.CharField(
+    widget=forms.Textarea(attrs={'maxlength': 1200}),
+        label=False,required=True)
     tenant_id = forms.ModelChoiceField(label=False, queryset=Tenants.objects.all(),required=False)
+
     class Meta:
         model = Restocks
-        fields = ('restock_date','supplier_id','driver_name','driver_contact','tenant_id')
+        fields = ('restock_date','supplier_id','driver_name','driver_contact','note','tenant_id')
 
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop("request")
@@ -130,7 +143,7 @@ class RestockForm(forms.ModelForm):
 
     def clean_driver_name(self):
         return self.cleaned_data['driver_name'].title()
-
+  
 
 class RestockDetailForm(forms.ModelForm):
    
@@ -147,10 +160,13 @@ class JobForm(forms.ModelForm):
     supplier_id = forms.ModelChoiceField(label=False, queryset=Supplier.objects.all())
     driver_name = forms.CharField(label=False)
     driver_contact = forms.CharField(label=False)
+    note = forms.CharField(
+    widget=forms.Textarea(attrs={'maxlength': 1200}),
+        label=False,required=True)
     tenant_id = forms.ModelChoiceField(label=False, queryset=Tenants.objects.all(),required=False)
     class Meta:
         model = Job_Certification
-        fields = ('certification_date','supplier_id','driver_name','driver_contact','tenant_id')
+        fields = ('certification_date','supplier_id','driver_name','driver_contact','note','tenant_id')
 
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop("request")
@@ -165,6 +181,8 @@ class JobForm(forms.ModelForm):
 
     def clean_driver_name(self):
         return self.cleaned_data['driver_name'].title()
+    
+
 
 class JobDetailForm(forms.ModelForm):
     status = (
@@ -173,7 +191,7 @@ class JobDetailForm(forms.ModelForm):
        
     )  
     funding = (
-        ('Gov. of Ghana', 'Gov. of Ghana'),
+        ('Internal', 'Internal'),
         ('Donor', 'Donor'),
        
     )

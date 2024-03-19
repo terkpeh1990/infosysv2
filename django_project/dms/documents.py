@@ -19,6 +19,9 @@ from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from .reader import *
 import os 
+from inventory.models import Products
+from django.db.models import F
+from purchase_order.models import *
 
 
 
@@ -266,6 +269,7 @@ def add_document_detail(request,file_id):
     budget = DocumentBudget.objects.filter(document_id=file.document_id.id)
     attachemnt = Documentattachement.objects.filter(document_id=file.document_id.id)
     beneficiary = DocumentBeneficiary.objects.filter(document_id=file.document_id.id)
+    product = DocumentProducts.objects.filter(document_id=file.document_id.id)
     if budget:
          cal= budget.aggregate(cc=Sum('total'))
          total = cal
@@ -296,7 +300,8 @@ def add_document_detail(request,file_id):
         'budget':budget,
         'total':total,
         'attachemnt':attachemnt,
-        'beneficiary':beneficiary
+        'beneficiary':beneficiary,
+        'product':product
     }
     return render(request,template,context)
 
@@ -312,6 +317,7 @@ def edit_document_detail(request,file_id):
     budget = DocumentBudget.objects.filter(document_id=file.document_id)
     attachemnt = Documentattachement.objects.filter(document_id=file.document_id.id)
     beneficiary = DocumentBeneficiary.objects.filter(document_id=file.document_id.id)
+    product = DocumentProducts.objects.filter(document_id=file.document_id.id)
     if budget:
          cal= budget.aggregate(cc=Sum('total'))
          total = cal
@@ -343,6 +349,7 @@ def edit_document_detail(request,file_id):
         'budget':budget,
         'total':total,
         'beneficiary':beneficiary,
+        'product':product
     }
     return render(request,template,context)
 
@@ -681,6 +688,7 @@ def view_document_detail(request,file_id):
     attachemnt = Documentattachement.objects.filter(document_id=file.id)
     beneficiary = DocumentBeneficiary.objects.filter(document_id=file.id)
     minutes = Documenttimeline.objects.filter(document_id=file.id).order_by('-id')
+    product = DocumentProducts.objects.filter(document_id=file.id)
     if budget:
          cal= budget.aggregate(cc=Sum('total'))
          total = cal
@@ -702,6 +710,7 @@ def view_document_detail(request,file_id):
         'minutes':minutes,
         'doc':doc,
         'beneficiary':beneficiary,
+        'product':product
     }
     return render(request,template,context)
 
@@ -929,3 +938,16 @@ def document_beneficiary_upload(request,file_id):
         'form': form,
     }
     return render(request, template, context)
+
+@permission_required('dms.custom_can_notify_procurement',raise_exception = True)
+@login_required(login_url='authentication:login')
+def pull_low_stock_product(request,file_id):
+    doc = DocumentDestination.objects.get(id=file_id)
+    file = Document.objects.get(id=doc.document_id.id)
+    low_stock = Products.objects.filter(tenant_id=request.user.devision.tenant_id.id,inventory__avialable_quantity__lte=F('restock_level'))
+    if low_stock:
+        for item in low_stock:
+            DocumentProducts.objects.get_or_create(document_id = file,product_id=item)
+    messages.info(request,'Low Stock Products Pulled')
+    return redirect('dms:add-document_detail',doc.id)
+

@@ -11,6 +11,7 @@ from tablib import Dataset
 from django.core.files.storage import FileSystemStorage
 from appsystem.models import *
 from django.views.generic.list import ListView
+from purchase_order.models import LocalPurchasingOrder
 import os
 
 
@@ -45,6 +46,7 @@ def add_restock(request):
         form = RestockForm(request.POST,request=request)
         if form.is_valid():
             restock = form.save(commit=False)
+
             if request.user.is_superuser:
                 tenant_id = form.cleaned_data['tenant_id']
             else:
@@ -80,10 +82,11 @@ def add_restock_detail(request,restock_id):
     if request.method == 'POST':
         form = RestockDetailForm(request.POST)
         prod = request.POST.get("product")
+        a,_ = prod.split('-----')
         print(prod)
         if form.is_valid():
             tenant =request.user.devision.tenant_id.id
-            inven = Inventory.objects.get(product_id__name = prod,tenant_id=tenant)
+            inven = Inventory.objects.get(product_id__name = a,tenant_id=tenant)
             
             quantity = form.cleaned_data['quantity']
             expiring_date = form.cleaned_data['expiring_date']

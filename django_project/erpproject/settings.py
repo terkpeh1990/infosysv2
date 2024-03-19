@@ -63,6 +63,8 @@ INSTALLED_APPS = [
     'accounting.apps.AccountingConfig',
     'dms.apps.DmsConfig',
     'supply_chain.apps.SupplyChainConfig',
+    'purchase_order.apps.PurchaseOrderConfig',
+    'fixedassets.apps.FixedassetsConfig',
     
     # Third Party App
     'crispy_forms',
@@ -207,10 +209,10 @@ TIME_ZONE = 'Africa/Accra'
 SOCIALACCOUNT_QUERY_EMAIL = True
 
 
-LOGIN_REDIRECT_URL = 'authentication/login/'    
-LOGOUT_REDIRECT_URL = 'authentication/login/'
+LOGIN_REDIRECT_URL = '/authentication/login/'    
+LOGOUT_REDIRECT_URL = '/authentication/login/'
 # # login url
-LOGIN_URL = 'authentication/login/'
+LOGIN_URL = '/authentication/login/'
 SITE_ID = 2
 # ACCOUNT_SIGNUP_REDIRECT_URL = "account_logout"
 ACCOUNT_LOGOUT_ON_GET= True

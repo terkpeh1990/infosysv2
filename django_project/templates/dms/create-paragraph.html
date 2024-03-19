@@ -237,6 +237,60 @@
                         </div>
                     
                     {% endif %}
+                    {% if product %}
+                        <div class='row'>
+                            <div class="py-2 mt-3 m-2">
+                                <!-- <h3 class="font-size-15 fw-bold">Beneficiaries</h3> <a class="card d-print-none text-primay" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Update Budget" href="{% url 'dms:document-beneficiary-upload' file.id %}" ><i class="mdi mdi-pencil-outline"></i></a> -->
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table ">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 70px;">ID.</th>
+                                            <th>Name</th>
+                                            <th>Status</th>
+                                            
+                                            <th>Action</th>
+                                           
+                                            
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for data in product %}
+                                            <tr>
+                                                <td>{{data.id}}</td>
+                                                <td>{{data.product_id.name}} </td>
+                                                <td>
+                                                    {% if data.status %}
+                                                        <span class="badge bg-info">Purchase Requisition Created</span>
+                                                    
+                                                    {% else %}
+                                                        <span class="badge bg-danger">Yet To Create Purchase Requisition</span>   
+                                                    {% endif %}
+                                                </td>
+                                                
+                                               
+                                                <td>
+                                                    {% if data.status %}
+                                                    {% else %}
+                                                        {% if perms.purchase_order.custom_create_purchase_requisition %}
+                                                            <a href="#" class="btn btn-soft-warning w-100">Create Purchase Requisiton</a>
+                                                        {% endif %}
+                                                    {% endif %}
+                                                </td>
+                                                 
+                                            </tr>
+                                        {% endfor %}
+                                        
+                                        
+                                        
+                                        
+                                    </tbody>
+                                </table>
+                            </div>   
+                        </div>
+                    
+                    {% endif %}
                         <div class="table-responsive">
                             
                         </div>
@@ -285,6 +339,12 @@
                                     <a href="{% url 'dms:add-document_currency' file.id %}" class="btn btn-success w-md waves-effect waves-light">Generate A Budget</a>
                                     <a href="{% url 'dms:add-attachment' file.id %}" class="btn btn-warning w-md waves-effect waves-light">Attach A File</a>
                                     <a href="{% url 'dms:document-beneficiary-upload' file.id %}" class="btn btn-danger w-md waves-effect waves-light">Upload beneficiaries</a>
+
+                                    {% if perms.dms.custom_can_notify_procurement %}
+                                        <a mt-2 href="{% url 'dms:pull-product' file.id %}" class="btn btn-info w-md waves-effect waves-light">Pull Product Running Low on Stock</a>
+                                    {% endif %}
+
+                                    
                                 </div> 
                             </div>
                         </div>

@@ -56,17 +56,13 @@
                                 {% #td name ="groupaction" %}
                                 
                                     {% #actions name ="groupedit" %}
-                                    {% if  perms.inventory.custom_update_brand  %}
-                                            <li data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Edit">
-                                                <a href="{% url 'inventory:edit-supplier' data.id %}" class="btn btn-sm btn-soft-info"><i class="mdi mdi-pencil-outline"></i></a>
-                                            </li>
-                                        {% endif %}
-                                        {% if perms.inventory.custom_delete_brand %}
-                                            <li data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Delete">
-                                                
-                                                <a href="#delete_link" id="delete-record" data-record-id="{{ data.id }}" data-bs-toggle="modal" class="delete-record btn btn-sm btn-soft-danger" data-target="#jobDelete"><i class="mdi mdi-delete-outline"></i></a>
-                                            </li>
-                                        {% endif %}
+                                    {% if  perms.inventory.custom_create_supplier  %}
+                                        
+                                        <li data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Delete">
+                                            
+                                            <a href="#delete_link" id="delete-record" data-record-id="{{ data.id }}" data-bs-toggle="modal" class="delete-record btn btn-sm btn-soft-danger" data-target="#jobDelete"><i class="mdi mdi-delete-outline"></i></a>
+                                        </li>
+                                     {% endif %}
                                     
                                     {% /actions %}
                                 

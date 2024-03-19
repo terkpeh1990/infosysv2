@@ -44,13 +44,16 @@ def add_job(request):
     if request.method == 'POST':
         form = JobForm(request.POST,request=request)
         if form.is_valid():
-            job = form.save(commit=False)
+            certification_date = form.cleaned_data.get('certification_date')
+            supplier_id =form.cleaned_data.get('supplier_id')
+            driver_name = form.cleaned_data.get('driver_name')
+            driver_contact = form.cleaned_data.get('driver_contact')
+            note = form.cleaned_data.get('note')
             if request.user.is_superuser:
                 tenant_id = form.cleaned_data['tenant_id']
             else:
                 tenant_id = request.user.devision.tenant_id
-            job.tenant_id = tenant_id
-            job.save()
+            job,created = Job_Certification.objects.get_or_create(certification_date=certification_date,driver_name=driver_name,driver_contact=driver_contact,note=note,supplier_id=supplier_id,tenant_id=tenant_id)
             messages.info(request,'Certification Initiated, Please add or upload Products')
             return redirect('inventory:add-job-details' , job.id)
     else:
@@ -81,10 +84,11 @@ def add_job_detail(request,job_id):
     if request.method == 'POST':
         form = JobDetailForm(request.POST,request=request)
         prod = request.POST.get("product")
+        a,_ = prod.split('-----')
         print(prod)
         if form.is_valid():
             tenant =request.user.devision.tenant_id.id
-            inven = Inventory.objects.get(product_id__name = prod,tenant_id=tenant)
+            inven = Inventory.objects.get(product_id__name = a,tenant_id=tenant)
             serial_number  = form.cleaned_data['serial_number']
             describtion = form.cleaned_data['description']
             status = form.cleaned_data['status']
@@ -185,6 +189,7 @@ def edit_job(request,job_id):
                 tenant_id = form.cleaned_data['tenant_id']
             else:
                 tenant_id = request.user.devision.tenant_id
+                
             restock.tenant_id = tenant_id
             restock.save()
             messages.info(request,'Restock Updated')
@@ -192,7 +197,7 @@ def edit_job(request,job_id):
     else:
         form = JobForm(instance=job ,request=request)
 
-    template = 'inventory/restock/create-restock.html'
+    template = 'inventory/job/create-job.html'
     context = {
         'form':form,
         'heading': 'Update',

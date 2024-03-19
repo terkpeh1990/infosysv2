@@ -37,6 +37,7 @@ urlpatterns = [
     path('filemanager/folder/document/<str:document_id>/return_or_cancel/',documents.return_document,name='return-document'),
     path('filemanager/folder/document/<str:file_id>/approved_amount/',documents.add_approved_amount,name='add-approved_amount'),
     path('filemanager/file/<str:file_id>/beneficiary/', documents.document_beneficiary_upload,name='document-beneficiary-upload'),
+    path('filemanager/file/<str:file_id>/pull_low_stock/',documents.pull_low_stock_product,name='pull-product'),
     
 
 

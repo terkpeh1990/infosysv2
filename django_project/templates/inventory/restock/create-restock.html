@@ -23,9 +23,10 @@
                             {{form.restock_date|as_crispy_field}}
                         </div>
                         <div class="col-3 col-sm-12 col-md-3">
-                            <label for="formrow-region-input" class="form-label">Select Supplier</label>
+                            <label for="formrow-region-input" class="form-label">Select Supplier.</label>
                             {{form.supplier_id|as_crispy_field}}
                         </div>
+                       
                         <div class="col-3 col-sm-12 col-md-3">
                             <label for="formrow-region-input" class="form-label">Driver Name</label>
                             {{form.driver_name|as_crispy_field}}
@@ -33,6 +34,14 @@
                         <div class="col-3 col-sm-12 col-md-3">
                             <label for="formrow-region-input" class="form-label">Driver Contact</label>
                             {{form.driver_contact|as_crispy_field}}
+                        </div>
+                       
+                    </div>
+                    <div class=" row mb-3">
+                        
+                        <div class="col-12 col-sm-12 col-md-12">
+                            <label for="formrow-region-input" class="form-label">Inspection Note.</label>
+                            {{form.note|as_crispy_field}}
                         </div>
                     </div>
                     {% if request.user.is_superuser %}

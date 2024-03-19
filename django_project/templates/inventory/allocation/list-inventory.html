@@ -110,7 +110,9 @@
                                                     {% if details.quantity == details.quantity_issued %}
                                                     
                                                     {% else %}
-                                                         <a href="{% url 'inventory:store-allocation-approve-quantity' details.id data.batch_number  %}" class="btn btn-soft-primary w-100">Issue Item</a>
+                                                        {% if data.batch_number %}
+                                                            <a href="{% url 'inventory:store-allocation-approve-quantity' details.id data.batch_number  %}" class="btn btn-soft-primary w-100">Issue Item</a>
+                                                        {% endif %}
                                                     {% endif %}
                                                     
                                                 {% endif %}

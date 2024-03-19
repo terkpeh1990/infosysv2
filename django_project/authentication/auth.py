@@ -24,6 +24,46 @@ from company.models import Sub_Devision
 import os
 # from django.views.decorators.cache import cache_page
 
+def error_404_view(request, exception):
+    form = UserLoginForm()
+    if request.method == 'POST':
+        # create an instance the UserLoginForm in the form.py passing in request.Post or None as an argument
+        form = UserLoginForm(request.POST)
+        if form.is_valid():  # if the data passed to the UserLoginForm in the form.py is passes all the clean data methods
+            # get the username form the already clearned data in UserLoginForm class in the form.py and store it into a varible called username
+           email = form.cleaned_data.get('email')
+            # get the password form the already clearned data in UserLoginForm class in the form.py and store it into a varible called password
+           password = form.cleaned_data.get('password')
+            # re-authenticate the username and password and store it into variable called user
+           user = authenticate(username=email, password=password)
+           print(user)
+           if user is not None:
+               login(request, user)
+               if user.is_authenticated and user.is_active and not user.is_new:
+                    messages.success(request, 'Login Successful')
+                    return redirect('dashboard')
+               elif user.is_authenticated and user.is_active and user.is_new:
+                    return redirect("authentication:change-password")
+               elif user.is_authenticated and not user.is_active:
+                    messages.info(request, 'User Account Deactivated')
+                # redirect the user to the managers
+                    return redirect("authentication:login")
+            #    elif user.is_authenticated and not user.devision.tenant_id.status:
+            #         messages.info(request, 'User Institutuin Deactivated')
+            #         return redirect("authentication:login")
+           else:
+                            
+                messages.info(request, 'Username or Password is incorrect')
+                # redirect the user to the managers
+                return redirect("authentication:login")
+
+
+    context = {
+        'form': form,  # context is the form itself
+    }
+    template = '404.html'
+    # data = {"name": "ThePythonDjango.com"}
+    return render(request, template, context)
 
 def login_view(request):
    
@@ -110,7 +150,7 @@ def add_usergroups(request):
     return render(request,template,context)
 
 @login_required(login_url='authentication:login')
-@permission_required('authentication.ccustom_update_user',raise_exception = True)
+@permission_required('authentication.custom_update_user',raise_exception = True)
 def edit_usergroups(request,group_id):
     if request.user.is_superuser:
             app_model = Companymodule.objects.all()

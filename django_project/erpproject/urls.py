@@ -22,18 +22,23 @@ from django.views.generic import TemplateView
 
 from django.conf import settings
 from django.conf.urls.static import static
+from django.conf.urls import handler404
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('dashboard/',views.DashboardView,name='dashboard'), 
+    path('',views.DashboardView,name='dashboard'), 
     path('authentication/', include('authentication.urls', namespace='authentication')), 
     path('inventory/', include('inventory.urls', namespace='inventory')), 
     path('company/', include('company.urls', namespace='company')), 
     path('accounting/',include('accounting.urls', namespace='accounting')),
     path('dms/',include('dms.urls',namespace='dms')),
     path('supplychain/',include('supply_chain.urls',namespace='supplychain')),
+    path('purchaseorder/',include('purchase_order.urls',namespace='purchaseorder')),
+    path('fixedassets/',include('fixedassets.urls',namespace='fixedassets')),
 ]
+
+handler404 = 'authentication.auth.error_404_view'
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

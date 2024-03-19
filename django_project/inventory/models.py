@@ -4,7 +4,8 @@ from company.models import *
 from django.core.validators import RegexValidator
 from authentication.models import *
 from django.conf import settings
-
+from django.core.validators import RegexValidator
+ 
 
 
 class Unit_of_Measurement(models.Model):
@@ -78,7 +79,6 @@ class Products(models.Model):
         ('Consumables','Consumables'),
          
     )
-    # brand_id =models.ForeignKey(Brands, on_delete=models.CASCADE,null=True, blank=True)
     category_id =models.ForeignKey(Categorys,related_name = 'products', on_delete=models.CASCADE,null=True, blank=True)
     name = models.CharField(max_length=250,null=True, blank=True)
     restock_level = models.PositiveIntegerField(default=0)
@@ -140,10 +140,21 @@ class Inventory_Details(models.Model):
 
 
 class Supplier(models.Model):
+    phone_message = 'Phone number must begin with 0 and contain only 10 digits' 
+
+     # your desired format 
+    phone_regex = RegexValidator(
+        regex=r'^(0)\d{9}$',
+        message=phone_message
+    )
     name = models.CharField(max_length=250,null=True,blank=True)
+    phone_number = models.CharField(max_length=20,validators=[phone_regex],null=True)
     address = models.CharField(max_length=250,null=True,blank=True)
     city = models.CharField(max_length=250,null=True,blank=True)
     country = models.CharField(max_length=250,null=True,blank=True)
+    phone_number = models.CharField(max_length=20,validators=[phone_regex],null=True)
+    supplier_email = models.CharField(max_length=250,null=True,blank=True)
+    
     tenant_id = models.ForeignKey(
         Tenants, blank=True, null=True, related_name = 'supplier',on_delete=models.CASCADE)
     class Meta:
@@ -163,7 +174,20 @@ class Supplier(models.Model):
     def __str__(self):
         return f"{self.name} ---- {self.tenant_id}"
 
+class Supplier_Products(models.Model):
+    product_id =models.ForeignKey(Products,related_name ='suppliers_product' ,on_delete=models.CASCADE,null=True, blank=True)
+    supplier_id = models.ForeignKey(
+        Supplier, blank=True, null=True, related_name = 'supplies',on_delete=models.CASCADE)
+    
+    def __str__(self):
+        return str(self.id)
 
+    class Meta:
+        
+        db_table = 'Suppliers_Product'
+        verbose_name = 'Suppliers_Product'
+        verbose_name_plural = 'Suppliers_Products'
+    
 
 class Restocks(models.Model):
     sts= (
@@ -191,6 +215,8 @@ class Restocks(models.Model):
     status = models.CharField(
         max_length=10, choices=status, default='Pending')
     classification = models.CharField(max_length=50, choices= sts,default="Consumables",blank=True, null=True)
+   
+    note  = models.CharField(max_length=1200, null=True, blank=True)
     tenant_id = models.ForeignKey(
         Tenants, blank=True, null=True, related_name = 'restock',on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True, blank=True)
@@ -262,6 +288,7 @@ class Job_Certification(models.Model):
     quantity = models.PositiveIntegerField(default=0)
     quantity_accepted = models.PositiveIntegerField(default=0)
     quantity_rejected = models.PositiveIntegerField(default=0)
+    note  = models.CharField(max_length=1200, null=True, blank=True)
     tenant_id = models.ForeignKey(
         Tenants, blank=True, null=True, related_name = 'job',on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True, blank=True)
@@ -291,7 +318,7 @@ class Job_detail(models.Model):
        
     )
     funding = (
-        ('Gov. of Ghana', 'Gov. of Ghana'),
+        ('Internal', 'Internal'),
         ('Donor', 'Donor'),
        
     )
@@ -301,7 +328,7 @@ class Job_detail(models.Model):
     serial_number = models.CharField(max_length=250,null=True,blank=True)
     description = models.CharField(max_length=250,null=True,blank=True)
     status = models.CharField(max_length=10, choices=status,)
-    funding = models.CharField(max_length=100, choices=funding, default = "Gov. of Ghana")
+    funding = models.CharField(max_length=100, choices=funding, default = "Internal")
 
     def __str__(self):
         return self.product_id.name

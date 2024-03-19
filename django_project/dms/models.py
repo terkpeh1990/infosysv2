@@ -6,6 +6,7 @@ from django.conf import settings
 from .validators import validate_file_extension
 from inventory.models import Supplier
 from decimal import Decimal
+from inventory.models import Products
 
 class DocumentCategory(models.Model):
     name = models.CharField(max_length=250)
@@ -66,6 +67,7 @@ class Document(models.Model):
             ("custom_can_create_pv_from_document", "Can Create Pv From Approved Budget"),
             ("custom_can_add_approve_budget_amount", "Can Add Approved Budget"),
             ("custom_can_add_supplier", "Can Add Supplier"),
+            ("custom_can_notify_procurement", "Can Notify Procurement"),
             
         ]
 
@@ -199,3 +201,18 @@ class DocumentBeneficiary(models.Model):
     def save(self, *args, **kwargs):
         self.balance = self.amount -  Decimal(self.amount_received)
         super(DocumentBeneficiary, self).save(*args, **kwargs)
+
+class DocumentProducts(models.Model):
+    document_id = models.ForeignKey(
+        Document, blank=True, null=True, related_name = 'documentproduct',on_delete=models.CASCADE)
+    product_id = models.ForeignKey(Products,related_name='document_productslist', on_delete= models.CASCADE)
+    status = models.BooleanField(default = False)
+
+    class Meta:
+        db_table = 'DocumentProducts'
+        verbose_name = 'DocumentProducts'
+        verbose_name_plural = 'DocumentProductss'
+
+    def __str__(self):
+        return f"{self.document_id.title} --- {self.product_id.name}"
+    

@@ -35,10 +35,6 @@ def supplier(request):
     return render(request,template,context)
 
 
-    name = models.CharField(max_length=250,null=True,blank=True)
-    address = models.CharField(max_length=250,null=True,blank=True)
-    city = models.CharField(max_length=250,null=True,blank=True)
-    country = models.CharField(max_length=250,null=True,blank=True)
 
 @login_required(login_url='authentication:login')
 @permission_required('inventory.custom_create_supplier',raise_exception = True)
@@ -54,13 +50,17 @@ def add_supplier(request):
             address = form.cleaned_data['address']
             city = form.cleaned_data['city']
             country = form.cleaned_data['country']
+            phone_number = form.cleaned_data['phone_number']
+            supplier_email = form.cleaned_data['supplier_email']
+        
             if request.user.is_superuser:
                 tenant_id = form.cleaned_data['tenant_id']
             else:
                 tenant_id = request.user.devision.tenant_id
-            supplier = Supplier.objects.get_or_create(name=name.title(),address= address.title(),city=city.title(),country=country.title(),tenant_id=tenant_id)
-            messages.info(request,'Supplier Saved')
-            return redirect('inventory:supplier-list')
+            supplier,created = Supplier.objects.get_or_create(name=name.title(),address= address.title(),city=city.title(),country=country.title(),phone_number=phone_number,supplier_email=supplier_email,tenant_id=tenant_id)
+            print(supplier)
+            messages.info(request,'Supplier Saved, Please Add Products')
+            return redirect('inventory:supplier-products',supplier.id)
     else:
         form = SupplierForm(request=request)
 
@@ -80,7 +80,7 @@ def edit_supplier(request,supplier_id):
         app_model = Companymodule.objects.all()
     else:
         app_model = Companymodule.objects.filter(tenant_id = request.user.devision.tenant_id.id)
-    supplier=Supplier.objects.get(id=brand_id)
+    supplier=Supplier.objects.get(id=supplier_id)
     if request.method == 'POST':
         form = SupplierForm(request.POST,instance=supplier,request=request)
         if form.is_valid():
@@ -143,3 +143,39 @@ def supplier_upload(request):
     }
     return render(request, template, context)
    
+
+def add_supplier_detail(request,supplier_id):
+    supplier=Supplier.objects.get(id=supplier_id)
+    detail = Supplier_Products.objects.filter(supplier_id=supplier.id)
+   
+    tenant =request.user.devision.tenant_id.id
+    app_model = Companymodule.objects.filter(tenant_id = request.user.devision.tenant_id.id)
+    product = Products.objects.filter(tenant_id = request.user.devision.tenant_id.id)
+   
+    if request.method == 'POST':
+        prod = request.POST.get("product")
+        a,_ = prod.split('-----')
+        print(prod)
+        inven = Inventory.objects.get(product_id__name = a,tenant_id=tenant)
+        Supplier_Products.objects.get_or_create(supplier_id=supplier,product_id=inven.product_id)
+        messages.info(request,'Product Added')
+        return redirect('inventory:supplier-products',supplier.id)
+   
+    template = 'inventory/supplier/create-supplier-detail.html'
+    context = {
+        
+        'heading': 'Supplier Products',
+        'pageview': 'List of Suppliers',
+        'app_model':app_model,
+        'detail':detail,
+        'supplier':supplier,
+        'product':product,
+        
+    }
+    return render(request,template,context)
+
+def delete_supplier_item(request,supplier_id):
+    requisition= Supplier_Products.objects.get(id=supplier_id)
+    requisition.delete()
+    messages.error(request,'Item Deleted')
+    return redirect('inventory:supplier-products', requisition.supplier_id.id)

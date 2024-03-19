@@ -19,7 +19,7 @@ def DashboardView(request):
     else:
         app_model = Companymodule.objects.filter(tenant_id = request.user.devision.tenant_id.id)
         
-    template = 'dashboard/dashboard.html'
+    template = 'dashboard/index.html'
     context = {
         # 'app_model ': app_model ,
         'heading': 'Dashboard',

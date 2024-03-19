@@ -33,6 +33,23 @@
                     <div class=" row mb-3">
                         
                         {% if request.user.is_superuser %}
+                            <div class="col-4 col-sm-12 col-md-3">
+                                <label for="formrow-region-input" class="form-label">Reorder Level</label>
+                                {{form.restock_level|as_crispy_field}}
+                            </div>
+                            <div class="col-4  col-sm-12 col-md-3">
+                                <label for="formrow-region-input" class="form-label">Select Unit of Measurement</label>
+                                {{form.unit_of_measurement|as_crispy_field}}
+                            </div>
+                            <div class="col-4  col-sm-12 col-md-3">
+                                <label for="formrow-region-input" class="form-label">Select Classification</label>
+                                {{form.type_of_product|as_crispy_field}}
+                            </div>
+                            <div class="col-4  col-sm-12 col-md-3">
+                                <label for="formrow-region-input" class="form-label">Select Institution</label>
+                                {{form.tenant_id|as_crispy_field}}
+                            </div>
+                        {% else %}
                             <div class="col-4 col-sm-12 col-md-4">
                                 <label for="formrow-region-input" class="form-label">Reorder Level</label>
                                 {{form.restock_level|as_crispy_field}}
@@ -42,17 +59,8 @@
                                 {{form.unit_of_measurement|as_crispy_field}}
                             </div>
                             <div class="col-4  col-sm-12 col-md-4">
-                                <label for="formrow-region-input" class="form-label">Select Institution</label>
-                                {{form.tenant_id|as_crispy_field}}
-                            </div>
-                        {% else %}
-                            <div class="col-4 col-sm-12 col-md-6">
-                                <label for="formrow-region-input" class="form-label">Reorder Level</label>
-                                {{form.restock_level|as_crispy_field}}
-                            </div>
-                            <div class="col-4  col-sm-12 col-md-6">
-                                <label for="formrow-region-input" class="form-label">Select Unit of Measurement</label>
-                                {{form.unit_of_measurement|as_crispy_field}}
+                                <label for="formrow-region-input" class="form-label">Select Classification</label>
+                                {{form.type_of_product|as_crispy_field}}
                             </div>
                     
                         {% endif %}
