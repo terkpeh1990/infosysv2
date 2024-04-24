@@ -44,7 +44,7 @@
                     {% for data in closingstock_list  %}
                         {% #tr name ="bodyrow" %}
                             {% #td name ="groupid" %}{{data.id}} {% /td %}
-                            {% #td name ="groupid" %}{{data.closing_date}} {% /td %}
+                            {% #td name ="groupid" %}{{data.closing_date|date:"M d, Y"}} {% /td %}
                             
                            
                                 {% if perms.inventory.custom_create_product %}

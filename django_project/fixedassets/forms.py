@@ -2,8 +2,10 @@ from django import forms
 from .models import *
 from django.forms.widgets import NumberInput
 from company.models import Devision,Sub_Devision
-from inventory.models import Brands
+from inventory.models import Brands,Products
 from datetime import date
+from authentication.models import User
+from accounting.models import Fiscal_year
 
 
 class ClassificationForm(forms.ModelForm):
@@ -124,6 +126,13 @@ class LandForm(forms.ModelForm):
         empty_label="Select One",
         required=True
     )
+    product = forms.ModelChoiceField(
+        queryset=Products.objects.filter(type_of_product='Capital').order_by('name'),
+        label=False,
+        empty_label="Select One",
+        required=True
+    )
+
     description =forms.CharField(label=False,required=True)
     accountingrecognition = forms.ModelChoiceField(
         queryset=AccountingRecognition.objects.filter(classification__name='Land').order_by('name'),
@@ -146,28 +155,10 @@ class LandForm(forms.ModelForm):
         required=True
     )
     size =forms.CharField(label=False,required=True)
-    location =forms.ModelChoiceField(
-        queryset=Location.objects.all().order_by('location'),
-        label=False,
-        empty_label="Select One",
-        required=True
-    )
+    
     ghanapostgpsaddress=forms.CharField(label=False,required=True)
     titled = forms.ChoiceField(label=False,choices=condition,required=True)
-    staffid = forms.CharField(label=False,required=True)
-    costcenter = forms.ModelChoiceField(
-        queryset=Devision.objects.all().order_by('name'),
-        label=False,
-        empty_label="Select One",
-        required=True
-    )
-    subcostcenter =forms.ModelChoiceField(
-        queryset=Sub_Devision.objects.all(),
-        label=False,
-        empty_label="Select One",
-        required=True
-    )
-   
+    
     methodofacquisition =forms.ModelChoiceField(
         queryset=MothodofAcquisition.objects.all().order_by('name'),
         label=False,
@@ -182,7 +173,7 @@ class LandForm(forms.ModelForm):
         empty_label="Select One",
         required=True
     )
-    value = forms.FloatField(label=False,required=False,initial=0.0) 
+    value = forms.FloatField(label=False,required=False) 
     usefullife = forms.IntegerField(label=False,required=False)
     comments = forms.CharField(
     widget=forms.Textarea(attrs={'maxlength': 255}),
@@ -190,36 +181,20 @@ class LandForm(forms.ModelForm):
 
     class Meta:
         model = FixedAsset
-        fields = ('classification','description','accountingrecognition','amotization','usage','ipsascategory','subcategory','size','location','ghanapostgpsaddress','titled','staffid','costcenter',
-        'subcostcenter','staffid','methodofacquisition',
-        'currentstatus','investmentproperty','fundsource','value','usefullife','comments')
+        fields = ('classification','product','description','accountingrecognition','amotization','usage','ipsascategory','subcategory','size','ghanapostgpsaddress','titled',
+                   'methodofacquisition','currentstatus','investmentproperty','fundsource','value','usefullife','comments')
     
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop("request")
         instance = kwargs.get("instance")
         super(LandForm,self).__init__(*args, **kwargs)
-        if self.request.user.is_superuser:
-            self.fields['costcenter'].queryset = Devision.objects.filter(status = True)
-            
-        else:
-            self.fields['costcenter'].queryset = Devision.objects.filter(tenant_id=self.request.user.devision.tenant_id.id,status = True)
-       
+        
         if instance:
-            self.fields['subcostcenter'].queryset = Sub_Devision.objects.filter(devision=instance.costcenter)
             self.fields['subcategory'].queryset = SubCategory.objects.filter(ipsascategory=instance.ipsascategory)
         else:
-            self.fields['subcostcenter'].queryset = Sub_Devision.objects.none()
             self.fields['subcategory'].queryset = SubCategory.objects.none()
+        self.fields['product'].queryset = Products.objects.filter(tenant_id= self.request.user.devision.tenant_id,type_of_product='Capital')
 
-
-        if 'costcenter' in self.data:
-            try:
-                devision = int(self.data.get('costcenter'))
-                self.fields['subcostcenter'].queryset = Sub_Devision.objects.filter(
-                    devision=devision)
-            except (ValueError, TypeError):
-                pass
-        
         if 'ipsascategory' in self.data:
             try:
                 ipsascategory = int(self.data.get('ipsascategory'))
@@ -265,6 +240,12 @@ class BuildingForm(forms.ModelForm):
         empty_label="Select One",
         required=True
     )
+    product = forms.ModelChoiceField(
+        queryset=Products.objects.filter(type_of_product='Capital').order_by('name'),
+        label=False,
+        empty_label="Select One",
+        required=True
+    )
     description =forms.CharField(label=False,required=True)
     accountingrecognition = forms.ModelChoiceField(
         queryset=AccountingRecognition.objects.filter(classification__name='Buldings And Other Structures').order_by('name'),
@@ -286,35 +267,15 @@ class BuildingForm(forms.ModelForm):
         required=True
     )
     quantity=forms.IntegerField(label=False,required=False)
-    location =forms.ModelChoiceField(
-        queryset=Location.objects.all().order_by('location'),
-        label=False,
-        empty_label="Select One",
-        required=True
-    )
     ghanapostgpsaddress=forms.CharField(label=False,required=True)
     dateplacedinservice=forms.DateField(widget=NumberInput(attrs={'type': 'date'}),label=False)
-    staffid = forms.CharField(label=False,required=True)
-    costcenter = forms.ModelChoiceField(
-        queryset=Devision.objects.all().order_by('name'),
-        label=False,
-        empty_label="Select One",
-        required=True
-    )
-    subcostcenter =forms.ModelChoiceField(
-        queryset=Sub_Devision.objects.all(),
-        label=False,
-        empty_label="Select One",
-        required=True
-    )
-    usagetype= forms.ChoiceField(label=False,choices=usagetype,required=True)
     methodofacquisition =forms.ModelChoiceField(
         queryset=MothodofAcquisition.objects.all().order_by('name'),
         label=False,
         empty_label="Select One",
         required=True
     )
-    currentstatus = forms.ChoiceField(label=False,choices=status,required=True)
+   
     conditions = forms.ChoiceField(label=False,choices=bcondition,required=True)
     investmentproperty =forms.ChoiceField(label=False,choices=condition,required=True)
     fundsource =forms.ModelChoiceField(
@@ -323,7 +284,7 @@ class BuildingForm(forms.ModelForm):
         empty_label="Select One",
         required=True
     )
-    value = forms.FloatField(label=False,required=False,initial=0.0) 
+    value = forms.FloatField(label=False,required=False) 
     usefullife = forms.IntegerField(label=False,required=False)
     comments = forms.CharField(
     widget=forms.Textarea(attrs={'maxlength': 255}),
@@ -331,36 +292,21 @@ class BuildingForm(forms.ModelForm):
 
     class Meta:
         model = FixedAsset
-        fields = ('classification','description','accountingrecognition','depreciation','ipsascategory','subcategory','quantity','location','ghanapostgpsaddress','dateplacedinservice','staffid','costcenter',
-        'subcostcenter','usagetype','staffid','methodofacquisition',
-        'currentstatus','conditions','investmentproperty','fundsource','value','usefullife','comments')
+        fields = ('classification','product','description','accountingrecognition','depreciation','ipsascategory','subcategory','quantity','ghanapostgpsaddress','dateplacedinservice',
+        'methodofacquisition','conditions','investmentproperty','fundsource','value','usefullife','comments')
     
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop("request")
         instance = kwargs.get("instance")
         super(BuildingForm,self).__init__(*args, **kwargs)
-        if self.request.user.is_superuser:
-            self.fields['costcenter'].queryset = Devision.objects.filter(status = True)
-            
-        else:
-            self.fields['costcenter'].queryset = Devision.objects.filter(tenant_id=self.request.user.devision.tenant_id.id,status = True)
        
         if instance:
-            self.fields['subcostcenter'].queryset = Sub_Devision.objects.filter(devision=instance.costcenter)
+            
             self.fields['subcategory'].queryset = SubCategory.objects.filter(ipsascategory=instance.ipsascategory)
         else:
-            self.fields['subcostcenter'].queryset = Sub_Devision.objects.none()
+            
             self.fields['subcategory'].queryset = SubCategory.objects.none()
-
-
-        if 'costcenter' in self.data:
-            try:
-                devision = int(self.data.get('costcenter'))
-                self.fields['subcostcenter'].queryset = Sub_Devision.objects.filter(
-                    devision=devision)
-            except (ValueError, TypeError):
-                pass
-        
+        self.fields['product'].queryset = Products.objects.filter(tenant_id= self.request.user.devision.tenant_id,type_of_product='Capital')
         if 'ipsascategory' in self.data:
             try:
                 ipsascategory = int(self.data.get('ipsascategory'))
@@ -406,6 +352,12 @@ class TransportForm(forms.ModelForm):
         empty_label="Select One",
         required=True
     )
+    product = forms.ModelChoiceField(
+        queryset=Products.objects.filter(type_of_product='Capital').order_by('name'),
+        label=False,
+        empty_label="Select One",
+        required=True
+    )
     description =forms.CharField(label=False,required=True)
     registrationnumber =forms.CharField(label=False,required=True)
     accountingrecognition = forms.ModelChoiceField(
@@ -428,12 +380,7 @@ class TransportForm(forms.ModelForm):
         required=True
     )
     quantity=forms.IntegerField(label=False,required=False)
-    location =forms.ModelChoiceField(
-        queryset=Location.objects.all().order_by('location'),
-        label=False,
-        empty_label="Select One",
-        required=True
-    )
+    
     dateplacedinservice=forms.DateField(widget=NumberInput(attrs={'type': 'date'}),label=False)
     colour =forms.CharField(label=False,required=True)
     chassisno =forms.CharField(label=False,required=True)
@@ -446,27 +393,13 @@ class TransportForm(forms.ModelForm):
     )
     model = forms.CharField(label=False,required=True)
     modelyear =forms.ChoiceField(choices=years, initial=date.today().year,label=False,required=True)
-    costcenter = forms.ModelChoiceField(
-        queryset=Devision.objects.all().order_by('name'),
-        label=False,
-        empty_label="Select One",
-        required=True
-    )
-    subcostcenter =forms.ModelChoiceField(
-        queryset=Sub_Devision.objects.all(),
-        label=False,
-        empty_label="Select One",
-        required=True
-    )
-    usagetype= forms.ChoiceField(label=False,choices=usagetype,required=True)
-    staffid = forms.CharField(label=False,required=True)
+    
     methodofacquisition =forms.ModelChoiceField(
         queryset=MothodofAcquisition.objects.all().order_by('name'),
         label=False,
         empty_label="Select One",
         required=True
     )
-    currentstatus = forms.ChoiceField(label=False,choices=status,required=True)
     conditions = forms.ChoiceField(label=False,choices=bcondition,required=True)
     investmentproperty =forms.ChoiceField(label=False,choices=condition,required=True)
     fundsource =forms.ModelChoiceField(
@@ -475,7 +408,7 @@ class TransportForm(forms.ModelForm):
         empty_label="Select One",
         required=True
     )
-    value = forms.FloatField(label=False,required=False,initial=0.0) 
+    value = forms.FloatField(label=False,required=False) 
     usefullife = forms.IntegerField(label=False,required=False)
     comments = forms.CharField(
     widget=forms.Textarea(attrs={'maxlength': 255}),
@@ -483,36 +416,23 @@ class TransportForm(forms.ModelForm):
 
     class Meta:
         model = FixedAsset
-        fields = ('classification','description','registrationnumber','accountingrecognition','depreciation','ipsascategory','subcategory','quantity','location','dateplacedinservice',
-        'colour','chassisno','engineserialno','manufacturer','model','modelyear','costcenter','subcostcenter','usagetype','staffid','methodofacquisition',
-        'currentstatus','conditions','investmentproperty','fundsource','value','usefullife','comments')
+        fields = ('classification','product','description','registrationnumber','accountingrecognition','depreciation','ipsascategory','subcategory','quantity','dateplacedinservice',
+        'colour','chassisno','engineserialno','manufacturer','model','modelyear','methodofacquisition',
+        'conditions','investmentproperty','fundsource','value','usefullife','comments')
     
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop("request")
         instance = kwargs.get("instance")
         super(TransportForm,self).__init__(*args, **kwargs)
-        if self.request.user.is_superuser:
-            self.fields['costcenter'].queryset = Devision.objects.filter(status = True)
-            
-        else:
-            self.fields['costcenter'].queryset = Devision.objects.filter(tenant_id=self.request.user.devision.tenant_id.id,status = True)
        
         if instance:
-            self.fields['subcostcenter'].queryset = Sub_Devision.objects.filter(devision=instance.costcenter)
+            
             self.fields['subcategory'].queryset = SubCategory.objects.filter(ipsascategory=instance.ipsascategory)
         else:
-            self.fields['subcostcenter'].queryset = Sub_Devision.objects.none()
+            
             self.fields['subcategory'].queryset = SubCategory.objects.none()
-
-
-        if 'costcenter' in self.data:
-            try:
-                devision = int(self.data.get('costcenter'))
-                self.fields['subcostcenter'].queryset = Sub_Devision.objects.filter(
-                    devision=devision)
-            except (ValueError, TypeError):
-                pass
-        
+        self.fields['product'].queryset = Products.objects.filter(tenant_id= self.request.user.devision.tenant_id,type_of_product='Capital')
+        self.fields['manufacturer'].queryset = Brands.objects.filter(tenant_id= self.request.user.devision.tenant_id)
         if 'ipsascategory' in self.data:
             try:
                 ipsascategory = int(self.data.get('ipsascategory'))
@@ -559,6 +479,12 @@ class OutdoorForm(forms.ModelForm):
         empty_label="Select One",
         required=True
     )
+    product = forms.ModelChoiceField(
+        queryset=Products.objects.filter(type_of_product='Capital').order_by('name'),
+        label=False,
+        empty_label="Select One",
+        required=True
+    )
     description =forms.CharField(label=False,required=True)
     accountingrecognition = forms.ModelChoiceField(
         queryset=AccountingRecognition.objects.filter(classification__name='Outdoor Machinery And Equipments').order_by('name'),
@@ -580,12 +506,6 @@ class OutdoorForm(forms.ModelForm):
         required=True
     )
     quantity=forms.IntegerField(label=False,required=False)
-    location =forms.ModelChoiceField(
-        queryset=Location.objects.all().order_by('location'),
-        label=False,
-        empty_label="Select One",
-        required=True
-    )
     ghanapostgpsaddress = forms.CharField(label=False)
     dateplacedinservice=forms.DateField(widget=NumberInput(attrs={'type': 'date'}),label=False)
     chassisno =forms.CharField(label=False,required=True)
@@ -598,28 +518,13 @@ class OutdoorForm(forms.ModelForm):
     model = forms.CharField(label=False,required=True)
     modelyear =forms.ChoiceField(choices=years, initial=date.today().year,label=False)
     tagno = forms.CharField(label=False,required=True)
-    costcenter = forms.ModelChoiceField(
-        queryset=Devision.objects.all().order_by('name'),
-        label=False,
-        empty_label="Select One",
-        required=True
-    )
-    subcostcenter =forms.ModelChoiceField(
-        queryset=Sub_Devision.objects.all(),
-        label=False,
-        empty_label="Select One",
-        required=True
-    )
     
-    usagetype= forms.ChoiceField(label=False,choices=usagetype,required=True)
-    staffid = forms.CharField(label=False,required=True)
     methodofacquisition =forms.ModelChoiceField(
         queryset=MothodofAcquisition.objects.all().order_by('name'),
         label=False,
         empty_label="Select One",
         required=True
     )
-    currentstatus = forms.ChoiceField(label=False,choices=status,required=True)
     conditions = forms.ChoiceField(label=False,choices=bcondition,required=True)
     investmentproperty =forms.ChoiceField(label=False,choices=condition,required=True)
     fundsource =forms.ModelChoiceField(
@@ -628,7 +533,7 @@ class OutdoorForm(forms.ModelForm):
         empty_label="Select One",
         required=True
     )
-    value = forms.FloatField(label=False,required=False,initial=0.0) 
+    value = forms.FloatField(label=False,required=False) 
     usefullife = forms.IntegerField(label=False,required=False)
     comments = forms.CharField(
     widget=forms.Textarea(attrs={'maxlength': 255}),
@@ -636,36 +541,21 @@ class OutdoorForm(forms.ModelForm):
 
     class Meta:
         model = FixedAsset
-        fields = ('classification','description','accountingrecognition','depreciation','ipsascategory','subcategory','quantity','location','ghanapostgpsaddress','dateplacedinservice',
-        'chassisno','engineserialno','manufacturer','model','modelyear','tagno','costcenter','subcostcenter','usagetype','staffid','methodofacquisition',
-        'currentstatus','conditions','investmentproperty','fundsource','value','usefullife','comments')
+        fields = ('classification','product','description','accountingrecognition','depreciation','ipsascategory','subcategory','quantity','ghanapostgpsaddress','dateplacedinservice',
+        'chassisno','engineserialno','manufacturer','model','modelyear','tagno','methodofacquisition','conditions','investmentproperty','fundsource','value','usefullife','comments')
     
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop("request")
         instance = kwargs.get("instance")
         super(OutdoorForm,self).__init__(*args, **kwargs)
-        if self.request.user.is_superuser:
-            self.fields['costcenter'].queryset = Devision.objects.filter(status = True)
-            
-        else:
-            self.fields['costcenter'].queryset = Devision.objects.filter(tenant_id=self.request.user.devision.tenant_id.id,status = True)
-       
+        
         if instance:
-            self.fields['subcostcenter'].queryset = Sub_Devision.objects.filter(devision=instance.costcenter)
+            
             self.fields['subcategory'].queryset = SubCategory.objects.filter(ipsascategory=instance.ipsascategory)
         else:
-            self.fields['subcostcenter'].queryset = Sub_Devision.objects.none()
             self.fields['subcategory'].queryset = SubCategory.objects.none()
-
-
-        if 'costcenter' in self.data:
-            try:
-                devision = int(self.data.get('costcenter'))
-                self.fields['subcostcenter'].queryset = Sub_Devision.objects.filter(
-                    devision=devision)
-            except (ValueError, TypeError):
-                pass
-        
+        self.fields['product'].queryset = Products.objects.filter(tenant_id= self.request.user.devision.tenant_id,type_of_product='Capital')
+        self.fields['manufacturer'].queryset = Brands.objects.filter(tenant_id= self.request.user.devision.tenant_id)
         if 'ipsascategory' in self.data:
             try:
                 ipsascategory = int(self.data.get('ipsascategory'))
@@ -712,6 +602,12 @@ class IndoorForm(forms.ModelForm):
         empty_label="Select One",
         required=True
     )
+    product = forms.ModelChoiceField(
+        queryset=Products.objects.filter(type_of_product='Capital').order_by('name'),
+        label=False,
+        empty_label="Select One",
+        required=True
+    )
     description =forms.CharField(label=False,required=True)
     accountingrecognition = forms.ModelChoiceField(
         queryset=AccountingRecognition.objects.filter(classification__name='Indoor').order_by('name'),
@@ -733,12 +629,7 @@ class IndoorForm(forms.ModelForm):
         required=True
     )
     quantity=forms.IntegerField(label=False,required=False)
-    location =forms.ModelChoiceField(
-        queryset=Location.objects.all().order_by('location'),
-        label=False,
-        empty_label="Select One",
-        required=True
-    )
+    
     
     dateplacedinservice=forms.DateField(widget=NumberInput(attrs={'type': 'date'}),label=False)
     chassisno =forms.CharField(label=False,required=True)
@@ -749,28 +640,13 @@ class IndoorForm(forms.ModelForm):
     )
     
     tagno = forms.CharField(label=False,required=True)
-    costcenter = forms.ModelChoiceField(
-        queryset=Devision.objects.all().order_by('name'),
-        label=False,
-        empty_label="Select One",
-        required=True
-    )
-    subcostcenter =forms.ModelChoiceField(
-        queryset=Sub_Devision.objects.all(),
-        label=False,
-        empty_label="Select One",
-        required=True
-    )
-    
-    usagetype= forms.ChoiceField(label=False,choices=usagetype,required=True)
-    staffid = forms.CharField(label=False,required=True)
+   
     methodofacquisition =forms.ModelChoiceField(
         queryset=MothodofAcquisition.objects.all().order_by('name'),
         label=False,
         empty_label="Select One",
         required=True
     )
-    currentstatus = forms.ChoiceField(label=False,choices=status,required=True)
     conditions = forms.ChoiceField(label=False,choices=bcondition,required=True)
     investmentproperty = forms.ChoiceField(label=False,choices=condition,required=True)
     fundsource =forms.ModelChoiceField(
@@ -779,7 +655,7 @@ class IndoorForm(forms.ModelForm):
         empty_label="Select One",
         required=True
     )
-    value = forms.FloatField(label=False,required=False,initial=0.0) 
+    value = forms.FloatField(label=False,required=False) 
     usefullife = forms.IntegerField(label=False,required=False)
     comments = forms.CharField(
     widget=forms.Textarea(attrs={'maxlength': 255}),
@@ -787,36 +663,22 @@ class IndoorForm(forms.ModelForm):
 
     class Meta:
         model = FixedAsset
-        fields = ('classification','description','accountingrecognition','depreciation','ipsascategory','subcategory','quantity','location','dateplacedinservice',
-        'chassisno','manufacturer','tagno','costcenter','subcostcenter','usagetype','staffid','methodofacquisition',
-        'currentstatus','conditions','investmentproperty','fundsource','value','usefullife','comments')
+        fields = ('classification','product','description','accountingrecognition','depreciation','ipsascategory','subcategory','quantity','dateplacedinservice',
+        'chassisno','manufacturer','tagno','methodofacquisition','conditions','investmentproperty','fundsource','value','usefullife','comments')
     
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop("request")
         instance = kwargs.get("instance")
         super(IndoorForm,self).__init__(*args, **kwargs)
-        if self.request.user.is_superuser:
-            self.fields['costcenter'].queryset = Devision.objects.filter(status = True)
-            
-        else:
-            self.fields['costcenter'].queryset = Devision.objects.filter(tenant_id=self.request.user.devision.tenant_id.id,status = True)
-       
+        
         if instance:
-            self.fields['subcostcenter'].queryset = Sub_Devision.objects.filter(devision=instance.costcenter)
+            
             self.fields['subcategory'].queryset = SubCategory.objects.filter(ipsascategory=instance.ipsascategory)
         else:
-            self.fields['subcostcenter'].queryset = Sub_Devision.objects.none()
+           
             self.fields['subcategory'].queryset = SubCategory.objects.none()
-
-
-        if 'costcenter' in self.data:
-            try:
-                devision = int(self.data.get('costcenter'))
-                self.fields['subcostcenter'].queryset = Sub_Devision.objects.filter(
-                    devision=devision)
-            except (ValueError, TypeError):
-                pass
-        
+        self.fields['manufacturer'].queryset = Brands.objects.filter(tenant_id= self.request.user.devision.tenant_id)
+        self.fields['product'].queryset = Products.objects.filter(tenant_id= self.request.user.devision.tenant_id,type_of_product='Capital')
         if 'ipsascategory' in self.data:
             try:
                 ipsascategory = int(self.data.get('ipsascategory'))
@@ -872,6 +734,12 @@ class WIPForm(forms.ModelForm):
         empty_label="Select One",
         required=True
     )
+    product = forms.ModelChoiceField(
+        queryset=Products.objects.filter(type_of_product='Capital').order_by('name'),
+        label=False,
+        empty_label="Select One",
+        required=True
+    )
     description =forms.CharField(label=False,required=True)
     accountingrecognition = forms.ModelChoiceField(
         queryset=AccountingRecognition.objects.filter(classification__name='Wip Or Cip').order_by('name'),
@@ -887,15 +755,53 @@ class WIPForm(forms.ModelForm):
         required=True
     )
     quantity=forms.IntegerField(label=False,required=False)
-    location =forms.ModelChoiceField(
-        queryset=Location.objects.all().order_by('location'),
+    
+    ghanapostgpsaddress = forms.CharField(label=False)
+    commencement_date=forms.DateField(widget=NumberInput(attrs={'type': 'date'}),label=False)
+    expectedcompletion_date=forms.DateField(widget=NumberInput(attrs={'type': 'date'}),label=False)
+    
+    accountingstatus = forms.ChoiceField(label=False,choices=accountingstatus,required=True)
+    methodofacquisition =forms.ModelChoiceField(
+        queryset=MothodofAcquisition.objects.all().order_by('name'),
         label=False,
         empty_label="Select One",
         required=True
     )
-    ghanapostgpsaddress = forms.CharField(label=False)
-    commencement_date=forms.DateField(widget=NumberInput(attrs={'type': 'date'}),label=False)
-    expectedcompletion_date=forms.DateField(widget=NumberInput(attrs={'type': 'date'}),label=False)
+    
+    fundsource =forms.ModelChoiceField(
+        queryset=SourceOfFunding.objects.all().order_by('funding'),
+        label=False,
+        empty_label="Select One",
+        required=True
+    )
+    costbf = forms.FloatField(label=False,required=False) 
+    currentperiodcost = forms.FloatField(label=False,required=False) 
+    costcf = forms.FloatField(label=False,required=False) 
+    comments = forms.CharField(
+    widget=forms.Textarea(attrs={'maxlength': 255}),
+        label=False,required=True)
+
+    class Meta:
+        model = FixedAsset
+        fields = ('classification','product','description','accountingrecognition','depreciation','ipsascategory','quantity','ghanapostgpsaddress','commencement_date',
+        'expectedcompletion_date','accountingstatus','methodofacquisition','fundsource','costbf','currentperiodcost','costcf','comments')
+    
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop("request")
+        instance = kwargs.get("instance")
+        
+        super(WIPForm,self).__init__(*args, **kwargs)
+
+        self.fields['product'].queryset = Products.objects.filter(tenant_id= self.request.user.devision.tenant_id,type_of_product='Capital')
+
+        
+        
+class AssetsAssignmentForm(forms.ModelForm):
+    usagetype = (
+            ('Pool', 'Pool'),
+            ('Assigned', 'Assigned'),
+        )
+       
     costcenter = forms.ModelChoiceField(
         queryset=Devision.objects.all().order_by('name'),
         label=False,
@@ -908,52 +814,35 @@ class WIPForm(forms.ModelForm):
         empty_label="Select One",
         required=True
     )
-    accountingstatus = forms.ChoiceField(label=False,choices=accountingstatus,required=True)
     usagetype= forms.ChoiceField(label=False,choices=usagetype,required=True)
-    staffid = forms.CharField(label=False,required=True)
-    methodofacquisition =forms.ModelChoiceField(
-        queryset=MothodofAcquisition.objects.all().order_by('name'),
-        label=False,
-        empty_label="Select One",
-        required=True
-    )
-    currentstatus = forms.ChoiceField(label=False,choices=status,required=True)
     
-    fundsource =forms.ModelChoiceField(
-        queryset=SourceOfFunding.objects.all().order_by('funding'),
+    user = forms.ModelChoiceField(
+        queryset=User.objects.all(),
         label=False,
         empty_label="Select One",
         required=True
     )
-    costbf = forms.FloatField(label=False,required=False,initial=0.0) 
-    currentperiodcost = forms.FloatField(label=False,required=False,initial=0.0) 
-    costcf = forms.FloatField(label=False,required=False,initial=0.0) 
-    comments = forms.CharField(
-    widget=forms.Textarea(attrs={'maxlength': 255}),
-        label=False,required=True)
-
+    assigndate=forms.DateField(widget=NumberInput(attrs={'type': 'date'}),label=False)
     class Meta:
-        model = FixedAsset
-        fields = ('classification','description','accountingrecognition','depreciation','ipsascategory','quantity','location','ghanapostgpsaddress','commencement_date',
-        'expectedcompletion_date','costcenter','subcostcenter','accountingstatus','usagetype','staffid','methodofacquisition',
-        'currentstatus','fundsource','costbf','currentperiodcost','costcf','comments')
+        model = FixedAssetsAssignment
+        fields = ('costcenter','subcostcenter','usagetype','user','assigndate')
     
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop("request")
         instance = kwargs.get("instance")
-        super(WIPForm,self).__init__(*args, **kwargs)
+        super(AssetsAssignmentForm,self).__init__(*args, **kwargs)
         if self.request.user.is_superuser:
             self.fields['costcenter'].queryset = Devision.objects.filter(status = True)
             
         else:
             self.fields['costcenter'].queryset = Devision.objects.filter(tenant_id=self.request.user.devision.tenant_id.id,status = True)
-       
+           
         if instance:
             self.fields['subcostcenter'].queryset = Sub_Devision.objects.filter(devision=instance.costcenter)
-            
+            self.fields['user'].queryset = User.objects.filter(sub_division=instance.subcostcenter)
         else:
             self.fields['subcostcenter'].queryset = Sub_Devision.objects.none()
-            
+            self.fields['user'].queryset = User.objects.none()
 
 
         if 'costcenter' in self.data:
@@ -964,4 +853,95 @@ class WIPForm(forms.ModelForm):
             except (ValueError, TypeError):
                 pass
         
+        if 'subcostcenter' in self.data:
+            try:
+                subcostcenter = int(self.data.get('subcostcenter'))
+                self.fields['user'].queryset = User.objects.filter(
+                    sub_division=subcostcenter)
+            except (ValueError, TypeError):
+                pass
+
+    def clean_usage_type(self, *args, **kwargs):
+        name = self.cleaned_data['usagetype'].title()
+        user = self.cleaned_data['user']
+        if  user is None:
+            raise forms.ValidationError(
+                {'user': ["Please Select a Staff"]})
         
+        return super(AssetsAssignmentForm, self).clean(*args, **kwargs)
+
+class AssetsReturnedForm(forms.ModelForm):
+    
+    returndate=forms.DateField(widget=NumberInput(attrs={'type': 'date'}),label=False,required=True)
+    class Meta:
+        model = FixedAssetsAssignment
+        fields = ('returndate',)
+    
+    
+
+    def clean_returndate_type(self, *args, **kwargs):
+        returndate = self.cleaned_data['returndate'].title()
+       
+        if  returndate is None:
+            raise forms.ValidationError(
+                {'returndate': ["Please Select a Date"]})
+        
+        return super(AssetsAssignmentForm, self).clean(*args, **kwargs)
+
+class DepreciationForm(forms.ModelForm):
+    """Form definition for MODELNAME."""
+    accountingyear = forms.ModelChoiceField(
+        queryset=Fiscal_year.objects.all().order_by('-period'),
+        label=False,
+        empty_label="Select One",
+        required=True
+    )
+
+    class Meta:
+        """Meta definition for MODELNAMEform."""
+
+        model = Depreciation
+        fields = ('accountingyear',)
+
+class ReevaluationForm(forms.ModelForm):
+    """Form definition for MODELNAME."""
+    accountingyear = forms.ModelChoiceField(
+        queryset=Fiscal_year.objects.all().order_by('-period'),
+        label=False,
+        empty_label="Select One",
+        required=True
+    )
+    newvalue =forms.FloatField(label=False,required=True) 
+    usefullife =forms.IntegerField(label=False,required=False)
+
+    class Meta:
+        """Meta definition for MODELNAMEform."""
+
+        model = Reevaluation
+        fields = ('accountingyear','newvalue','usefullife')
+
+class DesposalForm(forms.ModelForm):
+    """Form definition for MODELNAME."""
+    disposal = (
+        ('Sales', 'Sales'),
+        ('Auction', 'Auction'),
+        ('Donated', 'Donated'),
+        ('Trade-in/Exchanged', 'Trade-in/Exchanged'),
+        ('Transfer-out to Other Govt Entities', 'Transfer-out to Other Govt Entities'),
+        ('Scrapped', 'Scrapped'),
+    )
+    accountingyear = forms.ModelChoiceField(
+        queryset=Fiscal_year.objects.all().order_by('-period'),
+        label=False,
+        empty_label="Select One",
+        required=True
+    )
+    desposal_date =forms.DateField(widget=NumberInput(attrs={'type': 'date'}),label=False,required=True)
+    methodofdesposal =forms.ChoiceField(label=False,choices=disposal,required=True)
+    proceedsfromsales= forms.FloatField(label=False,required=True)
+
+    class Meta:
+        """Meta definition for MODELNAMEform."""
+
+        model = Disposals
+        fields = ('accountingyear','desposal_date','methodofdesposal','proceedsfromsales')

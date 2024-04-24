@@ -241,7 +241,11 @@ def add_user(request):
             user.is_new = True
             user.save()
             group = form.cleaned_data['group']
+            permission_data = form.cleaned_data['user_permissions']
             user.groups.add(group)
+            if permission_data is not None:
+                for permissions in permission_data:
+                    user.user_permissions.add(permissions)
             messages.info(request,'User Created')
             return redirect('authentication:user-list')
     else:
@@ -273,6 +277,14 @@ def edit_user(request,user_id):
             group = form.cleaned_data['group']
             user.groups.clear()
             user.groups.add(group)
+            user.user_permissions.clear()
+            permission_data = form.cleaned_data['user_permissions']
+            if permission_data is not None:
+                user.user_permissions.clear()
+                for permissions in permission_data:
+                    user.user_permissions.add(permissions)
+          
+            
             messages.info(request,'User Updated')
             return redirect('authentication:detail-user', user.id)
     else:

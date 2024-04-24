@@ -17,7 +17,11 @@ class  GradeThread(threading.Thread):
         print('started')
         try:
             for i in self.data.itertuples():
-                Grade.objects.get_or_create(name=i.Grade.title().strip())
+                try:
+                    tenant= Tenants.objects.get(name=i.Institutuion.title().strip())
+                except Tenants.DoesNotExist:
+                    tenant= Tenants.objects.create(name=i.Institutuion.title().strip())
+                Grade.objects.get_or_create(name=i.Grade.title().strip(),tenant_id=tenant)
         except IOError:
             print('fail')
             pass

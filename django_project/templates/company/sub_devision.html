@@ -39,6 +39,7 @@
                         {% #th name ="headCode" %}Code{% /th %}
                         {% #th name ="headDistrict" %}Sub Cost Center{% /th %}
                         {% #th name ="headRegion" %}Cost Center{% /th %}
+                        {% #th name ="headRegion" %}Goagraphical Location{% /th %}
                         {% if perms.company.custom_create_sub_devision or perms.company.custom_update_sub_devision  or perms.company.custom_delete_sub_devision %}
                             {% #th name ="headAction" %} Action {% /th %}
                         {% endif %}
@@ -51,6 +52,7 @@
                             {% #td name ="districtcode" %}{{data.code}}{% /td %}
                             {% #td name ="districtname" %}{{data.name}}{% /td %}
                             {% #td name ="districtname" %}{{data.devision}}{% /td %}
+                            {% #td name ="districtname" %}{{data.location}}{% /td %}
                             {% if perms.company.custom_create_sub_devision or perms.company.custom_update_sub_devision  or perms.company.custom_delete_sub_devision %}
                                 {% #td name ="districtaction" %}
                                 

@@ -3,6 +3,8 @@ from .models import *
 from django.forms.widgets import NumberInput
 from company.models import *
 from purchase_order.models import LocalPurchasingOrder
+from fixedassets.models import *
+from datetime import date
 
 class CategoryForm(forms.ModelForm):
     name = forms.CharField(label=False)
@@ -158,65 +160,749 @@ class RestockDetailForm(forms.ModelForm):
 class JobForm(forms.ModelForm):
     certification_date = forms.DateField(widget=NumberInput(attrs={'type': 'date'}),label=False)
     supplier_id = forms.ModelChoiceField(label=False, queryset=Supplier.objects.all())
-    driver_name = forms.CharField(label=False)
-    driver_contact = forms.CharField(label=False)
+    classification = forms.ModelChoiceField(
+        queryset=Classification.objects.all().order_by('name'),
+        label=False,
+        empty_label="Select One",
+        required=True
+    )
+    category = forms.ModelChoiceField(
+        queryset=Categorys.objects.all().order_by('name'),
+        label=False,
+        empty_label="Select One",
+        required=True)
+    product = forms.ModelChoiceField(
+        queryset=Products.objects.all().order_by('name'),
+        label=False,
+        empty_label="Select One",
+        required=True)
+    description = forms.CharField(label=False,required=True)
     note = forms.CharField(
     widget=forms.Textarea(attrs={'maxlength': 1200}),
         label=False,required=True)
     tenant_id = forms.ModelChoiceField(label=False, queryset=Tenants.objects.all(),required=False)
     class Meta:
         model = Job_Certification
-        fields = ('certification_date','supplier_id','driver_name','driver_contact','note','tenant_id')
+        fields = ('certification_date','supplier_id','classification','category','product','description','note','tenant_id')
 
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop("request")
+        instance = kwargs.get("instance")
         super(JobForm,self).__init__(*args, **kwargs)
-        if self.request.user.is_superuser:
-            self.fields['tenant_id'].queryset = Tenants.objects.all()
-            self.fields['supplier_id'].queryset = Supplier.objects.all()
+        if instance:
+            if self.request.user.is_superuser:
+                self.fields['tenant_id'].queryset = Tenants.objects.all()
+                self.fields['supplier_id'].queryset = Supplier.objects.all()
+            else:
+                self.fields['tenant_id'].queryset = Tenants.objects.filter(name=self.request.user.devision.tenant_id.name)
+                self.fields['supplier_id'].queryset = Supplier.objects.filter(tenant_id=self.request.user.devision.tenant_id.id)
+            self.fields['product'].queryset = Products.objects.filter(category_id=instance.category)
         else:
-            self.fields['tenant_id'].queryset = Tenants.objects.filter(name=self.request.user.devision.tenant_id.name)
+            self.fields['product'].queryset = Products.objects.none()
             self.fields['supplier_id'].queryset = Supplier.objects.filter(tenant_id=self.request.user.devision.tenant_id.id)
-            
+        self.fields['category'].queryset = Categorys.objects.filter(tenant_id=self.request.user.devision.tenant_id.id).order_by('name')
+        
+        if 'category' in self.data:
+            try:
+                category = int(self.data.get('category'))
+                self.fields['product'].queryset = Products.objects.filter(category_id=category)
+            except (ValueError, TypeError):
+                pass
+
+
 
     def clean_driver_name(self):
         return self.cleaned_data['driver_name'].title()
     
 
 
-class JobDetailForm(forms.ModelForm):
-    status = (
+# class JobDetailForm(forms.ModelForm):
+#     status = (
+#         ('Accepted', 'Accepted'),
+#         ('Rejected', 'Rejected'),
+       
+#     )  
+#     funding = (
+#         ('Internal', 'Internal'),
+#         ('Donor', 'Donor'),
+       
+#     )
+#     brand_id = forms.ModelChoiceField(label=False, queryset=Brands.objects.all())
+#     serial_number = forms.CharField(label=False)
+#     description = forms.CharField(label=False)
+#     status= forms.ChoiceField(choices = status,label=False)
+#     funding = forms.ChoiceField(choices = funding,label=False)
+#     class Meta:
+#         model = Job_detail
+#         fields = ('serial_number','description','status','funding')
+
+#     def __init__(self, *args, **kwargs):
+#         self.request = kwargs.pop("request")
+#         super(JobDetailForm, self).__init__(*args, **kwargs)
+#         self.fields['serial_number'].widget.attrs.update({'autofocus': 'autofocus'})
+        
+#         if self.request.user.is_superuser:
+#             self.fields['brand_id'].queryset = Brands.objects.all() 
+#         else:
+#             self.fields['brand_id'].queryset = Brands.objects.filter(tenant_id=self.request.user.devision.tenant_id) 
+            
+#     def describtion(self):
+#         return self.cleaned_data['description'].title()
+
+class JobLandForm(forms.ModelForm):
+    condition = (
+        ('Yes', 'Yes'),
+        ('No', 'No'),
+    )
+    st = (
         ('Accepted', 'Accepted'),
         ('Rejected', 'Rejected'),
        
-    )  
-    funding = (
-        ('Internal', 'Internal'),
-        ('Donor', 'Donor'),
-       
     )
-    brand_id = forms.ModelChoiceField(label=False, queryset=Brands.objects.all())
-    serial_number = forms.CharField(label=False)
-    description = forms.CharField(label=False)
-    status= forms.ChoiceField(choices = status,label=False)
-    funding = forms.ChoiceField(choices = funding,label=False)
+    usage = (
+        ('Public Domain', 'Public Domain'),
+        ('Private Domain', 'Private Domain'),
+    )
+    status = (
+        ('In Use', 'In Use'),
+        ('Not in Use', 'Not in Use'),
+        ('Retired', 'Retired'),
+        ('Disposed', 'Disposed'),
+    )
+    disposal = (
+        ('Sales', 'Sales'),
+        ('Auction', 'Auction'),
+        ('Donated', 'Donated'),
+        ('Trade-in/Exchanged', 'Trade-in/Exchanged'),
+        ('Transfer-out to Other Govt Entities', 'Transfer-out to Other Govt Entities'),
+        ('Scrapped', 'Scrapped'),
+    )
+    
+    accountingrecognition = forms.ModelChoiceField(
+        queryset=AccountingRecognition.objects.filter(classification__name='Land').order_by('name'),
+        label=False,
+        empty_label="Select One",
+        required=True
+    )
+    amotization = forms.ChoiceField(label=False,choices=condition,required=True)
+    usage =forms.ChoiceField(label=False,choices=usage,required=True)
+    ipsascategory = forms.ModelChoiceField(
+        queryset=IPSASCategory.objects.filter(classification__name='Land').order_by('name'),
+        label=False,
+        empty_label="Select One",
+        required=True
+    )
+    subcategory = forms.ModelChoiceField(
+        queryset=SubCategory.objects.all().order_by('name'),
+        label=False,
+        empty_label="Select One",
+        required=True
+    )
+    size =forms.CharField(label=False,required=True)
+    
+    ghanapostgpsaddress=forms.CharField(label=False,required=True)
+    titled = forms.ChoiceField(label=False,choices=condition,required=True)
+    
+    methodofacquisition =forms.ModelChoiceField(
+        queryset=MothodofAcquisition.objects.all().order_by('name'),
+        label=False,
+        empty_label="Select One",
+        required=True
+    )
+    investmentproperty =forms.ChoiceField(label=False,choices=condition,required=True)
+    fundsource =forms.ModelChoiceField(
+        queryset=SourceOfFunding.objects.all().order_by('funding'),
+        label=False,
+        empty_label="Select One",
+        required=True
+    )
+    value = forms.FloatField(label=False,required=False) 
+    usefullife = forms.IntegerField(label=False,required=False)
+    status = forms.ChoiceField(label=False,choices=st,required=True)
+    comments = forms.CharField(
+    widget=forms.Textarea(attrs={'maxlength': 255}),
+        label=False,required=True)
+
     class Meta:
         model = Job_detail
-        fields = ('serial_number','description','status','funding')
-
+        fields = ('accountingrecognition','amotization','usage','ipsascategory','subcategory','size','ghanapostgpsaddress','titled',
+                   'methodofacquisition','investmentproperty','fundsource','value','usefullife','status','comments')
+    
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop("request")
-        super(JobDetailForm, self).__init__(*args, **kwargs)
-        self.fields['serial_number'].widget.attrs.update({'autofocus': 'autofocus'})
+        instance = kwargs.get("instance")
+        super(JobLandForm,self).__init__(*args, **kwargs)
         
-        if self.request.user.is_superuser:
-            self.fields['brand_id'].queryset = Brands.objects.all() 
+        if instance:
+            self.fields['subcategory'].queryset = SubCategory.objects.filter(ipsascategory=instance.ipsascategory)
         else:
-            self.fields['brand_id'].queryset = Brands.objects.filter(tenant_id=self.request.user.devision.tenant_id) 
-            
-    def describtion(self):
-        return self.cleaned_data['description'].title()
+            self.fields['subcategory'].queryset = SubCategory.objects.none()
+        # self.fields['product'].queryset = Products.objects.filter(tenant_id= self.request.user.devision.tenant_id,type_of_product='Capital')
 
+        if 'ipsascategory' in self.data:
+            try:
+                ipsascategory = int(self.data.get('ipsascategory'))
+                self.fields['subcategory'].queryset = SubCategory.objects.filter(
+                    ipsascategory=ipsascategory)
+            except (ValueError, TypeError):
+                pass
+
+
+class JobBuildingForm(forms.ModelForm):
+    condition = (
+        ('Yes', 'Yes'),
+        ('No', 'No'),
+    )
+    usagetype = (
+        ('Pool', 'Pool'),
+        ('Assigned', 'Assigned'),
+    )
+    st = (
+        ('Accepted', 'Accepted'),
+        ('Rejected', 'Rejected'),
+       
+    )
+    status = (
+        ('In Use', 'In Use'),
+        ('Not in Use', 'Not in Use'),
+        ('Retired', 'Retired'),
+        ('Disposed', 'Disposed'),
+    )
+    disposal = (
+        ('Sales', 'Sales'),
+        ('Auction', 'Auction'),
+        ('Donated', 'Donated'),
+        ('Trade-in/Exchanged', 'Trade-in/Exchanged'),
+        ('Transfer-out to Other Govt Entities', 'Transfer-out to Other Govt Entities'),
+        ('Scrapped', 'Scrapped'),
+    )
+    bcondition=(
+        ('Good','Good'),
+        ('Needs Repair/Renovation/Servicing','Needs Repair/Renovation/Servicing'),
+        ('Irrepairable/Unserviceable','Irrepairable/Unserviceable'),
+        ('Not Sighted','Not Sighted'),
+    )
+    
+    accountingrecognition = forms.ModelChoiceField(
+        queryset=AccountingRecognition.objects.filter(classification__name='Buldings And Other Structures').order_by('name'),
+        label=False,
+        empty_label="Select One",
+        required=True
+    )
+    depreciation = forms.ChoiceField(label=False,choices=condition,required=True)
+    ipsascategory = forms.ModelChoiceField(
+        queryset=IPSASCategory.objects.filter(classification__name='Buldings And Other Structures').order_by('name'),
+        label=False,
+        empty_label="Select One",
+        required=True
+    )
+    subcategory = forms.ModelChoiceField(
+        queryset=SubCategory.objects.all().order_by('name'),
+        label=False,
+        empty_label="Select One",
+        required=True
+    )
+    quantity=forms.IntegerField(label=False,required=False)
+    ghanapostgpsaddress=forms.CharField(label=False,required=True)
+    dateplacedinservice=forms.DateField(widget=NumberInput(attrs={'type': 'date'}),label=False)
+    methodofacquisition =forms.ModelChoiceField(
+        queryset=MothodofAcquisition.objects.all().order_by('name'),
+        label=False,
+        empty_label="Select One",
+        required=True
+    )
+   
+    conditions = forms.ChoiceField(label=False,choices=bcondition,required=True)
+    investmentproperty =forms.ChoiceField(label=False,choices=condition,required=True)
+    fundsource =forms.ModelChoiceField(
+        queryset=SourceOfFunding.objects.all().order_by('funding'),
+        label=False,
+        empty_label="Select One",
+        required=True
+    )
+    value = forms.FloatField(label=False,required=False) 
+    usefullife = forms.IntegerField(label=False,required=False)
+    status = forms.ChoiceField(label=False,choices=st,required=True)
+    comments = forms.CharField(
+    widget=forms.Textarea(attrs={'maxlength': 255}),
+        label=False,required=True)
+
+    class Meta:
+        model = Job_detail
+        fields = ('accountingrecognition','depreciation','ipsascategory','subcategory','quantity','ghanapostgpsaddress','dateplacedinservice',
+        'methodofacquisition','conditions','investmentproperty','fundsource','value','usefullife','status','comments')
+    
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop("request")
+        instance = kwargs.get("instance")
+        super(JobBuildingForm,self).__init__(*args, **kwargs)
+       
+        if instance:
+            
+            self.fields['subcategory'].queryset = SubCategory.objects.filter(ipsascategory=instance.ipsascategory)
+        else:
+            
+            self.fields['subcategory'].queryset = SubCategory.objects.none()
+        # self.fields['product'].queryset = Products.objects.filter(tenant_id= self.request.user.devision.tenant_id,type_of_product='Capital')
+        if 'ipsascategory' in self.data:
+            try:
+                ipsascategory = int(self.data.get('ipsascategory'))
+                self.fields['subcategory'].queryset = SubCategory.objects.filter(
+                    ipsascategory=ipsascategory)
+            except (ValueError, TypeError):
+                pass
+
+class JobTransportForm(forms.ModelForm):
+    years = [(year, str(year)) for year in range(1700, date.today().year + 1)]
+    condition = (
+        ('Yes', 'Yes'),
+        ('No', 'No'),
+    )
+    usagetype = (
+        ('Pool', 'Pool'),
+        ('Assigned', 'Assigned'),
+    )
+    st = (
+        ('Accepted', 'Accepted'),
+        ('Rejected', 'Rejected'),
+       
+    )
+    
+    status = (
+        ('In Use', 'In Use'),
+        ('Not in Use', 'Not in Use'),
+        ('Retired', 'Retired'),
+        ('Disposed', 'Disposed'),
+    )
+    disposal = (
+        ('Sales', 'Sales'),
+        ('Auction', 'Auction'),
+        ('Donated', 'Donated'),
+        ('Trade-in/Exchanged', 'Trade-in/Exchanged'),
+        ('Transfer-out to Other Govt Entities', 'Transfer-out to Other Govt Entities'),
+        ('Scrapped', 'Scrapped'),
+    )
+    bcondition=(
+        ('Good','Good'),
+        ('Needs Repair/Renovation/Servicing','Needs Repair/Renovation/Servicing'),
+        ('Irrepairable/Unserviceable','Irrepairable/Unserviceable'),
+        ('Not Sighted','Not Sighted'),
+    )
+    
+    registrationnumber =forms.CharField(label=False,required=True)
+    accountingrecognition = forms.ModelChoiceField(
+        queryset=AccountingRecognition.objects.filter(classification__name='Transport Equipments').order_by('name'),
+        label=False,
+        empty_label="Select One",
+        required=True
+    )
+    depreciation = forms.ChoiceField(label=False,choices=condition,required=True)
+    ipsascategory = forms.ModelChoiceField(
+        queryset=IPSASCategory.objects.filter(classification__name='Transport Equipments').order_by('name'),
+        label=False,
+        empty_label="Select One",
+        required=True
+    )
+    subcategory = forms.ModelChoiceField(
+        queryset=SubCategory.objects.all().order_by('name'),
+        label=False,
+        empty_label="Select One",
+        required=True
+    )
+    quantity=forms.IntegerField(label=False,required=False)
+    
+    dateplacedinservice=forms.DateField(widget=NumberInput(attrs={'type': 'date'}),label=False)
+    colour =forms.CharField(label=False,required=True)
+    chassisno =forms.CharField(label=False,required=True)
+    engineserialno =forms.CharField(label=False,required=True)
+    manufacturer = forms.ModelChoiceField(
+        queryset=Brands.objects.all().order_by('name'),
+        label=False,
+        empty_label="Select One",
+        required=True
+    )
+    model = forms.CharField(label=False,required=True)
+    modelyear =forms.ChoiceField(choices=years, initial=date.today().year,label=False,required=True)
+    
+    methodofacquisition =forms.ModelChoiceField(
+        queryset=MothodofAcquisition.objects.all().order_by('name'),
+        label=False,
+        empty_label="Select One",
+        required=True
+    )
+    conditions = forms.ChoiceField(label=False,choices=bcondition,required=True)
+    investmentproperty =forms.ChoiceField(label=False,choices=condition,required=True)
+    fundsource =forms.ModelChoiceField(
+        queryset=SourceOfFunding.objects.all().order_by('funding'),
+        label=False,
+        empty_label="Select One",
+        required=True
+    )
+    value = forms.FloatField(label=False,required=False) 
+    usefullife = forms.IntegerField(label=False,required=False)
+    status = forms.ChoiceField(label=False,choices=st,required=True)
+    comments = forms.CharField(
+    widget=forms.Textarea(attrs={'maxlength': 255}),
+        label=False,required=True)
+
+    class Meta:
+        model = Job_detail
+        fields = ('registrationnumber','accountingrecognition','depreciation','ipsascategory','subcategory','quantity','dateplacedinservice',
+        'colour','chassisno','engineserialno','manufacturer','model','modelyear','methodofacquisition',
+        'conditions','investmentproperty','fundsource','value','usefullife','status','comments')
+    
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop("request")
+        instance = kwargs.get("instance")
+        super(JobTransportForm,self).__init__(*args, **kwargs)
+       
+        if instance:
+            
+            self.fields['subcategory'].queryset = SubCategory.objects.filter(ipsascategory=instance.ipsascategory)
+        else:
+            
+            self.fields['subcategory'].queryset = SubCategory.objects.none()
+        # self.fields['product'].queryset = Products.objects.filter(tenant_id= self.request.user.devision.tenant_id,type_of_product='Capital')
+        self.fields['manufacturer'].queryset = Brands.objects.filter(tenant_id= self.request.user.devision.tenant_id)
+        if 'ipsascategory' in self.data:
+            try:
+                ipsascategory = int(self.data.get('ipsascategory'))
+                self.fields['subcategory'].queryset = SubCategory.objects.filter(
+                    ipsascategory=ipsascategory)
+            except (ValueError, TypeError):
+                pass
+
+class JobOutdoorForm(forms.ModelForm):
+    years = [(year, str(year)) for year in range(1700, date.today().year + 1)]
+    condition = (
+        ('Yes', 'Yes'),
+        ('No', 'No'),
+    )
+    usagetype = (
+        ('Pool', 'Pool'),
+        ('Assigned', 'Assigned'),
+    )
+    st = (
+        ('Accepted', 'Accepted'),
+        ('Rejected', 'Rejected'),
+       
+    )
+    
+    status = (
+        ('In Use', 'In Use'),
+        ('Not in Use', 'Not in Use'),
+        ('Retired', 'Retired'),
+        ('Disposed', 'Disposed'),
+    )
+    disposal = (
+        ('Sales', 'Sales'),
+        ('Auction', 'Auction'),
+        ('Donated', 'Donated'),
+        ('Trade-in/Exchanged', 'Trade-in/Exchanged'),
+        ('Transfer-out to Other Govt Entities', 'Transfer-out to Other Govt Entities'),
+        ('Scrapped', 'Scrapped'),
+    )
+    bcondition=(
+        ('Good','Good'),
+        ('Needs Repair/Renovation/Servicing','Needs Repair/Renovation/Servicing'),
+        ('Irrepairable/Unserviceable','Irrepairable/Unserviceable'),
+        ('Not Sighted','Not Sighted'),
+    )
+    
+    accountingrecognition = forms.ModelChoiceField(
+        queryset=AccountingRecognition.objects.filter(classification__name='Outdoor Machinery And Equipments').order_by('name'),
+        label=False,
+        empty_label="Select One",
+        required=True
+    )
+    depreciation = forms.ChoiceField(label=False,choices=condition,required=True)
+    ipsascategory = forms.ModelChoiceField(
+        queryset=IPSASCategory.objects.filter(classification__name='Outdoor Machinery And Equipments').order_by('name'),
+        label=False,
+        empty_label="Select One",
+        required=True
+    )
+    subcategory = forms.ModelChoiceField(
+        queryset=SubCategory.objects.all().order_by('name'),
+        label=False,
+        empty_label="Select One",
+        required=True
+    )
+    quantity=forms.IntegerField(label=False,required=False)
+    ghanapostgpsaddress = forms.CharField(label=False)
+    dateplacedinservice=forms.DateField(widget=NumberInput(attrs={'type': 'date'}),label=False)
+    chassisno =forms.CharField(label=False,required=True)
+    engineserialno =forms.CharField(label=False)
+    manufacturer = forms.ModelChoiceField(
+        queryset=Brands.objects.all().order_by('name'),
+        label=False,
+        empty_label="Select One",
+    )
+    model = forms.CharField(label=False,required=True)
+    modelyear =forms.ChoiceField(choices=years, initial=date.today().year,label=False)
+    tagno = forms.CharField(label=False,required=True)
+    
+    methodofacquisition =forms.ModelChoiceField(
+        queryset=MothodofAcquisition.objects.all().order_by('name'),
+        label=False,
+        empty_label="Select One",
+        required=True
+    )
+    conditions = forms.ChoiceField(label=False,choices=bcondition,required=True)
+    investmentproperty =forms.ChoiceField(label=False,choices=condition,required=True)
+    fundsource =forms.ModelChoiceField(
+        queryset=SourceOfFunding.objects.all().order_by('funding'),
+        label=False,
+        empty_label="Select One",
+        required=True
+    )
+    value = forms.FloatField(label=False,required=False) 
+    usefullife = forms.IntegerField(label=False,required=False)
+    status = forms.ChoiceField(label=False,choices=st,required=True)
+    comments = forms.CharField(
+    widget=forms.Textarea(attrs={'maxlength': 255}),
+        label=False,required=True)
+
+    class Meta:
+        model = Job_detail
+        fields = ('accountingrecognition','depreciation','ipsascategory','subcategory','quantity','ghanapostgpsaddress','dateplacedinservice',
+        'chassisno','engineserialno','manufacturer','model','modelyear','tagno','methodofacquisition','conditions','investmentproperty','fundsource','value','usefullife','status','comments')
+    
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop("request")
+        instance = kwargs.get("instance")
+        super(JobOutdoorForm,self).__init__(*args, **kwargs)
+        
+        if instance:
+            
+            self.fields['subcategory'].queryset = SubCategory.objects.filter(ipsascategory=instance.ipsascategory)
+        else:
+            self.fields['subcategory'].queryset = SubCategory.objects.none()
+        # self.fields['product'].queryset = Products.objects.filter(tenant_id= self.request.user.devision.tenant_id,type_of_product='Capital')
+        self.fields['manufacturer'].queryset = Brands.objects.filter(tenant_id= self.request.user.devision.tenant_id)
+        if 'ipsascategory' in self.data:
+            try:
+                ipsascategory = int(self.data.get('ipsascategory'))
+                self.fields['subcategory'].queryset = SubCategory.objects.filter(
+                    ipsascategory=ipsascategory)
+            except (ValueError, TypeError):
+                pass
+
+class JobIndoorForm(forms.ModelForm):
+    years = [(year, str(year)) for year in range(1700, date.today().year + 1)]
+    condition = (
+        ('Yes', 'Yes'),
+        ('No', 'No'),
+    )
+    usagetype = (
+        ('Pool', 'Pool'),
+        ('Assigned', 'Assigned'),
+    )
+    st = (
+        ('Accepted', 'Accepted'),
+        ('Rejected', 'Rejected'),
+       
+    )
+    
+    status = (
+        ('In Use', 'In Use'),
+        ('Not in Use', 'Not in Use'),
+        ('Retired', 'Retired'),
+        ('Disposed', 'Disposed'),
+    )
+    disposal = (
+        ('Sales', 'Sales'),
+        ('Auction', 'Auction'),
+        ('Donated', 'Donated'),
+        ('Trade-in/Exchanged', 'Trade-in/Exchanged'),
+        ('Transfer-out to Other Govt Entities', 'Transfer-out to Other Govt Entities'),
+        ('Scrapped', 'Scrapped'),
+    )
+    bcondition=(
+        ('Good','Good'),
+        ('Needs Repair/Renovation/Servicing','Needs Repair/Renovation/Servicing'),
+        ('Irrepairable/Unserviceable','Irrepairable/Unserviceable'),
+        ('Not Sighted','Not Sighted'),
+    )
+    
+    accountingrecognition = forms.ModelChoiceField(
+        queryset=AccountingRecognition.objects.filter(classification__name='Indoor').order_by('name'),
+        label=False,
+        empty_label="Select One",
+        required=True
+    )
+    depreciation = forms.ChoiceField(label=False,choices=condition,required=True)
+    ipsascategory = forms.ModelChoiceField(
+        queryset=IPSASCategory.objects.filter(classification__name='Indoor').order_by('name'),
+        label=False,
+        empty_label="Select One",
+        required=True
+    )
+    subcategory = forms.ModelChoiceField(
+        queryset=SubCategory.objects.all().order_by('name'),
+        label=False,
+        empty_label="Select One",
+        required=True
+    )
+    quantity=forms.IntegerField(label=False,required=False)
+    
+    
+    dateplacedinservice=forms.DateField(widget=NumberInput(attrs={'type': 'date'}),label=False)
+    chassisno =forms.CharField(label=False,required=True)
+    manufacturer = forms.ModelChoiceField(
+        queryset=Brands.objects.all().order_by('name'),
+        label=False,
+        empty_label="Select One",
+    )
+    
+    tagno = forms.CharField(label=False,required=True)
+   
+    methodofacquisition =forms.ModelChoiceField(
+        queryset=MothodofAcquisition.objects.all().order_by('name'),
+        label=False,
+        empty_label="Select One",
+        required=True
+    )
+    conditions = forms.ChoiceField(label=False,choices=bcondition,required=True)
+    investmentproperty = forms.ChoiceField(label=False,choices=condition,required=True)
+    fundsource =forms.ModelChoiceField(
+        queryset=SourceOfFunding.objects.all().order_by('funding'),
+        label=False,
+        empty_label="Select One",
+        required=True
+    )
+    value = forms.FloatField(label=False,required=False) 
+    usefullife = forms.IntegerField(label=False,required=False)
+    status = forms.ChoiceField(label=False,choices=st,required=True)
+    comments = forms.CharField(
+    widget=forms.Textarea(attrs={'maxlength': 255}),
+        label=False,required=True)
+
+    class Meta:
+        model = Job_detail
+        fields = ('accountingrecognition','depreciation','ipsascategory','subcategory','quantity','dateplacedinservice',
+        'chassisno','manufacturer','tagno','methodofacquisition','conditions','investmentproperty','fundsource','value','usefullife','status','comments')
+    
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop("request")
+        instance = kwargs.get("instance")
+        super(JobIndoorForm,self).__init__(*args, **kwargs)
+        
+        if instance:
+            
+            self.fields['subcategory'].queryset = SubCategory.objects.filter(ipsascategory=instance.ipsascategory)
+        else:
+           
+            self.fields['subcategory'].queryset = SubCategory.objects.none()
+        self.fields['manufacturer'].queryset = Brands.objects.filter(tenant_id= self.request.user.devision.tenant_id)
+        # self.fields['product'].queryset = Products.objects.filter(tenant_id= self.request.user.devision.tenant_id,type_of_product='Capital')
+        if 'ipsascategory' in self.data:
+            try:
+                ipsascategory = int(self.data.get('ipsascategory'))
+                self.fields['subcategory'].queryset = SubCategory.objects.filter(
+                    ipsascategory=ipsascategory)
+            except (ValueError, TypeError):
+                pass
+
+class JobWIPForm(forms.ModelForm):
+    years = [(year, str(year)) for year in range(1700, date.today().year + 1)]
+    accountingstatus = (
+        ('In-progress','In-progress'),
+        ('Completed','Completed'),
+        ('Completed and Transferred','Completed and Transferred'),
+       
+    )
+    st = (
+        ('Accepted', 'Accepted'),
+        ('Rejected', 'Rejected'),
+       
+    )
+    condition = (
+        ('Yes', 'Yes'),
+        ('No', 'No'),
+    )
+    usagetype = (
+        ('Pool', 'Pool'),
+        ('Assigned', 'Assigned'),
+    )
+    
+    status = (
+        ('In Use', 'In Use'),
+        ('Not in Use', 'Not in Use'),
+        ('Retired', 'Retired'),
+        ('Disposed', 'Disposed'),
+        ('On-going', 'On-going'),
+        ('Abandoned', 'Abandoned'),
+        ('Suspended', 'Suspended'),
+    )
+    disposal = (
+        ('Sales', 'Sales'),
+        ('Auction', 'Auction'),
+        ('Donated', 'Donated'),
+        ('Trade-in/Exchanged', 'Trade-in/Exchanged'),
+        ('Transfer-out to Other Govt Entities', 'Transfer-out to Other Govt Entities'),
+        ('Scrapped', 'Scrapped'),
+    )
+    bcondition= (
+        ('Good','Good'),
+        ('Needs Repair/Renovation/Servicing','Needs Repair/Renovation/Servicing'),
+        ('Irrepairable/Unserviceable','Irrepairable/Unserviceable'),
+        ('Not Sighted','Not Sighted'),
+    )
+    
+    accountingrecognition = forms.ModelChoiceField(
+        queryset=AccountingRecognition.objects.filter(classification__name='Wip Or Cip').order_by('name'),
+        label=False,
+        empty_label="Select One",
+        required=True
+    )
+    depreciation = forms.ChoiceField(label=False,choices=condition,required=True)
+    ipsascategory = forms.ModelChoiceField(
+        queryset=IPSASCategory.objects.filter(classification__name='Wip Or Cip').order_by('name'),
+        label=False,
+        empty_label="Select One",
+        required=True
+    )
+    quantity=forms.IntegerField(label=False,required=False)
+    
+    ghanapostgpsaddress = forms.CharField(label=False)
+    commencement_date=forms.DateField(widget=NumberInput(attrs={'type': 'date'}),label=False)
+    expectedcompletion_date=forms.DateField(widget=NumberInput(attrs={'type': 'date'}),label=False)
+    
+    accountingstatus = forms.ChoiceField(label=False,choices=accountingstatus,required=True)
+    methodofacquisition =forms.ModelChoiceField(
+        queryset=MothodofAcquisition.objects.all().order_by('name'),
+        label=False,
+        empty_label="Select One",
+        required=True
+    )
+    
+    fundsource =forms.ModelChoiceField(
+        queryset=SourceOfFunding.objects.all().order_by('funding'),
+        label=False,
+        empty_label="Select One",
+        required=True
+    )
+    costbf = forms.FloatField(label=False,required=False) 
+    currentperiodcost = forms.FloatField(label=False,required=False) 
+    costcf = forms.FloatField(label=False,required=False) 
+    status = forms.ChoiceField(label=False,choices=st,required=True)
+    comments = forms.CharField(
+    widget=forms.Textarea(attrs={'maxlength': 255}),
+        label=False,required=True)
+
+    class Meta:
+        model = Job_detail
+        fields = ('accountingrecognition','depreciation','ipsascategory','quantity','ghanapostgpsaddress','commencement_date',
+        'expectedcompletion_date','accountingstatus','methodofacquisition','fundsource','costbf','currentperiodcost','costcf','status','comments')
+    
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop("request")
+        instance = kwargs.get("instance")
+        
+        super(JobWIPForm,self).__init__(*args, **kwargs)
+
+        
 
 class RequisitionForm(forms.ModelForm):
     sts= (

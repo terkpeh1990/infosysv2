@@ -22,7 +22,7 @@
 {% block contents %}
 <div class="row">
     <div class="col-lg-12">
-        {% #card title="List Of Certifications" %}
+        {% #card title="Assets Certification Status" %}
         
         <div class="table-responsive">
             {% if perms.inventory.custom_create_job_certification %}
@@ -46,7 +46,7 @@
                     {% for data in job_list  %}
                         {% #tr name ="bodyrow" %}
                             {% #td name ="groupid" %}{{data.id}}{% /td %}
-                            {% #td name ="groupid" %}{{data.certification_date}}{% /td %}
+                            {% #td name ="groupid" %}{{data.certification_date|date:"M d, Y"}}{% /td %}
                             {% #td name ="groupname" %}{{data.supplier_id.name}}{% /td %}
                             {% #td name ="status" %}
                                 {% if data.status == 'Pending' %}

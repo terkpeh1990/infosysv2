@@ -7,17 +7,47 @@
         <!-- Left Menu Start -->
         <ul class="metismenu list-unstyled" id="side-menu">
           <li class="menu-title" key="t-menu">Menu</li>
-          
-            <li>
+          <li>
                 <a href="javascript: void(0);" class="has-arrow waves-effect">
                 <i class="bx bx-data"></i>
                 <span key="t-products">Fixed Assets</span>
                 </a>
-                <ul class="sub-menu" aria-expanded="false">
+                    <ul class="sub-menu" aria-expanded="false">
                     
                         <li>
-                            <a href="#" key="t-supplier">Dashboard</a>
+                            <a href="{% url 'fixedassets:assetdashboard' %}" key="t-dashboard">Dashboard</a>
                         </li> 
+                
+                        {% if perms.fixedassets.custom_view_fixedassets %}
+                            <li>
+                                <a href="{% url 'fixedassets:asset-list' %}" key="t-assetlist">Assets</a>
+                            </li> 
+                            <li>
+                                <a href="{% url 'fixedassets:depreciation-list' %}" key="t-depreciation">Depreciation</a>
+                                
+                            </li> 
+                            <li>
+                                <a href="{% url 'fixedassets:reevaluation-list' %}" key="t-reevaluation">Re-Evaluated Assets</a>
+                                
+                            </li> 
+                            <li>
+                                <a href="{% url 'fixedassets:disposal-list' %}" key="t-disposal">Disposed Assets</a>
+                                
+                            </li> 
+                        {% endif %}
+                        
+                    
+                    </ul>
+            </li>
+          
+            <li>
+                <a href="javascript: void(0);" class="has-arrow waves-effect">
+                <i class="bx bx-data"></i>
+                <span key="t-products">Setup</span>
+                </a>
+                <ul class="sub-menu" aria-expanded="false">
+                    
+                        
                         {% if perms.fixedassets.custom_create_classification %}
                         <li>
                             <a href="{% url 'fixedassets:classification-list' %}" key="t-classification">Classifications</a>
@@ -59,15 +89,10 @@
                             <a href="{% url 'fixedassets:methodofacquisition-list' %}" key="t-methodofacquisition">Method of Acquisition</a>
                         </li> 
                         {% endif %}
-                        {% if perms.fixedassets.custom_view_fixedassets %}
-                            <li>
-                                <a href="{% url 'fixedassets:asset-list' %}" key="t-assetlist">Assets</a>
-                            </li> 
-                        {% endif %}
                         
-                    
                 </ul>
             </li>
+            
             
         
           

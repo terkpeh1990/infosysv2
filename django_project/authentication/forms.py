@@ -90,6 +90,12 @@ class CreateUserForm(UserCreationForm):
     sub_division = forms.ModelChoiceField(queryset=Sub_Devision.objects.all(),label=False)
     grade = forms.ModelChoiceField(queryset=Grade.objects.all(),label=False)
     group = forms.ModelChoiceField(queryset=Group.objects.all(),label=False)
+    user_permissions = forms.ModelMultipleChoiceField(
+        queryset=Permission.objects.filter(codename__icontains='custom'),
+        widget=forms.CheckboxSelectMultiple,
+        label=False,
+        required = False,
+    )
     email = forms.CharField(label=False)
     password1 = forms.CharField(label=False, widget=forms.PasswordInput)
     password2 = forms.CharField(label=False, widget=forms.PasswordInput)
@@ -97,7 +103,7 @@ class CreateUserForm(UserCreationForm):
 
     class Meta:
         model = User
-        fields = ('staffid','last_name','first_name','phone_number','devision', 'sub_division', 'grade','group','email','password1', 'password2',)
+        fields = ('staffid','last_name','first_name','phone_number','devision', 'sub_division', 'grade','group','email','password1', 'password2','user_permissions')
     
     def clean_first_name(self):
         return self.cleaned_data['first_name'].title()
@@ -159,12 +165,17 @@ class UpdateUserForm(forms.ModelForm):
     grade = forms.ModelChoiceField(queryset=Grade.objects.all(),label=False)
     group = forms.ModelChoiceField(queryset=Group.objects.all(),label=False)
     email = forms.CharField(label=False)
-    
+    user_permissions = forms.ModelMultipleChoiceField(
+        queryset=Permission.objects.filter(codename__icontains='custom'),
+        widget=forms.CheckboxSelectMultiple,
+        label=False,
+        required = False,
+    )
    
 
     class Meta:
         model = User
-        fields = ('staffid','last_name','first_name','phone_number','devision', 'sub_division','grade', 'group','email',)
+        fields = ('staffid','last_name','first_name','phone_number','devision', 'sub_division','grade', 'group','email','user_permissions')
     
     def clean_first_name(self):
         return self.cleaned_data['first_name'].title()

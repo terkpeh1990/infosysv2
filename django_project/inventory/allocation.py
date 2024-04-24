@@ -12,7 +12,8 @@ from appsystem.models import *
 from django.views.generic.list import ListView
 from .filters import *
 import os
-
+from fixedassets.models import FixedAsset
+from fixedassets.forms import AssetsAssignmentForm
 
 @login_required(login_url='authentication:login')
 @permission_required('authentication.custom_view_report',raise_exception = True)
@@ -298,7 +299,7 @@ def allocation_list_inventory(request,item_id):
     if details.destination_id.classification  == "Consumables":
         inventory_detail =  Inventory_Details.objects.filter(inventory_id = inventory,avialable_quantity__gt = 0).order_by('expiring_date')
     else:
-        inventory_detail = Assets.objects.filter(product_id=details.product_id.id ,status=False)
+        inventory_detail = FixedAsset.objects.filter(product_id=details.product_id.id ,status='Avialable')
 
     template = 'inventory/allocation/list-inventory.html'
     context = {
@@ -358,32 +359,47 @@ login_required(login_url='authentication:login')
 def store_allocation_assets_issue(request,item_id,asset_id):
     detail = Allocation_Details.objects.get(id=item_id)
     item_inventory = Inventory.objects.get(product_id = detail.product_id)
-    asset = Assets.objects.get(id=asset_id)
+    asset = FixedAsset.objects.get(id=asset_id)
     assets = Assigned_Assets.objects.filter(allocation_id=detail.destination_id.id,tenant_id = detail.destination_id.allocation_id.tenant_id.id )
     assets_count = assets.count()
-    print(assets_count)
-    try:
-        assets = Assigned_Assets.objects.filter(allocation_id=detail.destination_id.id,tenant_id =detail.destination_id.allocation_id.tenant_id.id )
-        assets_count = assets.count()
-        print(assets_count)
-    except Assigned_Assets.DoesNotExist:
-        assets_count = 0
-    if assets_count >= detail.quantity:
-        messages.error(request,"Quantiy Issued cannot be more than" + str(detail.quantity))
-        return redirect('inventory:allocation-list-inventory', item_id)
-    elif assets_count > item_inventory.avialable_quantity:
-        messages.error(request,"Quantiy Issued cannot be more than " + str(item_inventory.avialable_quantity))
-        return redirect('inventory:allocation-list-inventory', item_id)
-        
+    if request.method == 'POST':
+        form = AssetsAssignmentForm(request.POST,request=request)
+        if form.is_valid():
+            types = form.cleaned_data['usagetype']
+            if request.user.has_perm('inventory.custom_issue_requisition') or request.user.has_perm('inventory.custom_create_user'):
+            
+                if detail.quantity_issued >= detail.quantity:
+                    messages.error(request,"Quantiy Issued cannot be more than" + str(detail.quantity))
+                    return redirect('inventory:allocation-list-inventory', item_id)
+                else:
+                    assignment = form.save(commit=False)
+                    assignment.allocation = detail.destination_id.allocation_id
+                    assignment.status = 'Assigned'
+                    assignment.asset = asset 
+                    assignment.save()
+                    item_inventory.avialable_quantity -= 1
+                    item_inventory.save()
+                    detail.quantity_issued +=1
+                    detail.save()
+                    asset.status = 'Assigned'
+                    asset.costcenter = assignment.costcenter
+                    asset.subcostcenter = assignment.subcostcenter
+                    asset.location = assignment.subcostcenter.location
+                    asset.user = assignment.user
+                    asset.position = assignment.user.grade
+                    asset.usagetype = assignment.usagetype
+                    asset.currentstatus = 'In Use'
+                    asset.save()
+                messages.success(request,"Item Issued")
+                return redirect('inventory:allocation-list-inventory', item_id)
+                
     else:
-        
-        Assigned_Assets.objects.get_or_create(assets_id=asset,product_id=detail.product_id,allocation_id=detail.destination_id,pool=True,tenant_id=detail.destination_id.allocation_id.tenant_id)
-        item_inventory.avialable_quantity -= 1
-        item_inventory.save()
-        detail.quantity_issued +=1
-        detail.save()
-        asset.status = True
-        asset.save()
-    messages.success(request,"Item Issued")
-    return redirect('inventory:allocation-list-inventory', item_id)
+            
+        form = AssetsAssignmentForm(request=request)
+    template = 'fixedassets/assets/create-assign-asset.html'
+    context = {
+        'form': form,
+        'item_inventory':item_inventory
+        }
+    return render(request, template, context)
     

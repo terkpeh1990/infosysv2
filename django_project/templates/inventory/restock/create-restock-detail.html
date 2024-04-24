@@ -33,7 +33,7 @@
                         
                         {% #tr name ="name" %}
                             {% #td name ="headdate" %}Date :{% /td %}
-                            {% #td name ="username" %}{{ restock.restock_date }}{% /td %}
+                            {% #td name ="username" %}{{ restock.restock_date|date:"M d, Y" }}{% /td %}
                         {% /tr  %}
                         {% #tr name ="name" %}
                             {% #td name ="headsupplier" %}Supplier :{% /td %}
@@ -106,7 +106,7 @@
                                     <datalist id="productlist">
                                         {% for item in product %}
                                          
-                                            <option value="{{item.name}}" >
+                                            <option value="{{item.name}}-----{{item.unit_of_measurement.name}}" >
                         
                                         {% endfor %}
                                     </datalist>

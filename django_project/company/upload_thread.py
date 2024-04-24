@@ -3,6 +3,7 @@ import threading
 from django.utils.datastructures import MultiValueDictKeyError
 from .models import *
 from authentication.models import User
+from fixedassets.models import Location
 
 class  DevisionThread(threading.Thread):
     def __init__(self, dbframe):
@@ -38,7 +39,13 @@ class  Sub_DevisionThread(threading.Thread):
                     devision = Devision.objects.get(name=i.CostCenter.title().strip())
                 except Devision.DoesNotExist:
                     devision= Devision.objects.create(name=i.CostCenter.title().strip())
-                district = Sub_Devision.objects.get_or_create(name=i.SubCostCenter.title().strip(),code=i.Code,devision=devision)
+                try:
+                    location = Location.objects.get(location=i.Location.title().strip())
+                except Location.DoesNotExist:
+                    location= Location.objects.create(location=i.Location.title().strip())
+                district,created = Sub_Devision.objects.get_or_create(name=i.SubCostCenter.title().strip(),code=i.Code,devision=devision)
+                district.location = location
+                district.save()
         except IOError:
             print('fail')
             pass

@@ -36,7 +36,7 @@ class Fiscal_year(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.period} --- {self.name}"
+        return f"{self.period}"
 
 class Account_Class(models.Model):
     code = models.CharField(max_length=250,null=True,blank=True)

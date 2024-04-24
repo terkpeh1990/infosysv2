@@ -72,7 +72,7 @@ def InventoryDashboardView(request):
     total_requisition = requisition_list.count()
     total_consumable = requisition_list.filter(classification="Consumables").count()
     total_capital = requisition_list.filter(classification="Capital").count()
-    current_req = requisition_list.order_by('-id')[:5]
+    current_req = requisition_list.order_by('-id')[:7]
     # capital_by_month = requisition_list.filter(classification="Capital").annotate(month=ExtractMonth('requisition_date')).values( 'month').annotate(total_requisition=Count('id'))
     
     if product_list == 0 or low_stock == 0 :

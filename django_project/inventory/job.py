@@ -33,6 +33,11 @@ def job_cert(request):
     }
     return render(request,template,context)
 
+@login_required(login_url='authentication:login')
+def load_product(request):
+    category = request.GET.get('category')
+    product = Products.objects.filter(tenant_id=request.user.tenant_id,category_id=category).order_by('name')
+    return render(request, 'inventory/products/product_dropdown_list.html', {'product': product})
 
 @login_required(login_url='authentication:login')
 @permission_required('inventory.custom_create_job_certification',raise_exception = True)
@@ -46,14 +51,16 @@ def add_job(request):
         if form.is_valid():
             certification_date = form.cleaned_data.get('certification_date')
             supplier_id =form.cleaned_data.get('supplier_id')
-            driver_name = form.cleaned_data.get('driver_name')
-            driver_contact = form.cleaned_data.get('driver_contact')
+            classification = form.cleaned_data.get('classification')
+            category = form.cleaned_data.get('category')
+            product = form.cleaned_data.get('product')
+            description = form.cleaned_data.get('description')
             note = form.cleaned_data.get('note')
             if request.user.is_superuser:
                 tenant_id = form.cleaned_data['tenant_id']
             else:
                 tenant_id = request.user.devision.tenant_id
-            job,created = Job_Certification.objects.get_or_create(certification_date=certification_date,driver_name=driver_name,driver_contact=driver_contact,note=note,supplier_id=supplier_id,tenant_id=tenant_id)
+            job,created = Job_Certification.objects.get_or_create(certification_date=certification_date,classification=classification,category=category,product=product,description=description,note=note,supplier_id=supplier_id,tenant_id=tenant_id)
             messages.info(request,'Certification Initiated, Please add or upload Products')
             return redirect('inventory:add-job-details' , job.id)
     else:
@@ -77,30 +84,60 @@ def add_job_detail(request,job_id):
     total_rejected = detail.filter(status="Rejected").count()
     if request.user.is_superuser:
         app_model = Companymodule.objects.all()
-        product = Products.objects.filter(type_of_product="Capital")
     else:
         app_model = Companymodule.objects.filter(tenant_id = request.user.devision.tenant_id.id)
-        product = Products.objects.filter(tenant_id = request.user.devision.tenant_id.id,type_of_product="Capital")
     if request.method == 'POST':
-        form = JobDetailForm(request.POST,request=request)
-        prod = request.POST.get("product")
-        a,_ = prod.split('-----')
-        print(prod)
+        if job.classification.name == 'Land':
+            form = JobLandForm(request.POST,request=request)
+        elif job.classification.name == 'Buldings And Other Structures':
+            form = JobBuildingForm(request.POST,request=request)
+        elif job.classification.name == 'Transport Equipments':
+            form = JobTransportForm(request.POST,request=request)
+        elif job.classification.name == 'Outdoor Machinery And Equipments':
+            form = JobOutdoorForm(request.POST,request=request)
+        elif job.classification.name == 'Indoor':
+            form = JobIndoorForm(request.POST,request=request)
+        else:
+            form =JobWIPForm(request.POST,request=request)
+
+
         if form.is_valid():
-            tenant =request.user.devision.tenant_id.id
-            inven = Inventory.objects.get(product_id__name = a,tenant_id=tenant)
-            serial_number  = form.cleaned_data['serial_number']
-            describtion = form.cleaned_data['description']
-            status = form.cleaned_data['status']
-            funding = form.cleaned_data['funding']
-            brand_id = form.cleaned_data['brand_id']
-            Job_detail.objects.get_or_create(job_id=job,product_id=inven.product_id,brand_id=brand_id,serial_number=serial_number,description=describtion,status=status,funding=funding)
+            asset = form.save(commit=False)
+            asset.job_id =job
+            asset.product = job.product
+            asset.description = job.description
+            asset.save()
             messages.info(request,'Item added')
             return redirect('inventory:add-job-details' , job.id)
     else:
-        form = JobDetailForm(request=request)
+        if job.classification.name == 'Land':
+            form = JobLandForm(request=request)
+        elif job.classification.name == 'Buldings And Other Structures':
+            form = JobBuildingForm(request=request)
+        elif job.classification.name == 'Transport Equipments':
+            form = JobTransportForm(request=request)
+        elif job.classification.name == 'Outdoor Machinery And Equipments':
+            form = JobOutdoorForm(request=request)
+        elif job.classification.name == 'Indoor':
+            form = JobIndoorForm(request=request)
+        else:
+            form =JobWIPForm(request=request)
+            
+        
+    if job.classification.name == 'Land':
+        template = 'inventory/job/create-job-land.html'
+    elif job.classification.name == 'Buldings And Other Structures':
+        template = 'inventory/job/create-job-building.html'
+    elif job.classification.name == 'Transport Equipments':
+        template = 'inventory/job/create-job-transport.html'
+    elif job.classification.name == 'Indoor':
+        template = 'inventory/job/create-job-indoor.html'
+    elif job.classification.name == 'Outdoor Machinery And Equipments':
+        template = 'inventory/job/create-job-outdoor.html'
+    else:
+        template = 'inventory/job/create-job-wip.html'
 
-    template = 'inventory/job/create-job-detail.html'
+
     context = {
         'form':form,
         'heading': 'New Restock',
@@ -108,7 +145,6 @@ def add_job_detail(request,job_id):
         'app_model':app_model,
         'detail':detail,
         'job':job,
-        'product':product,
         'total':total,
         'total_accepted':total_accepted,
         'total_rejected':total_rejected
@@ -120,47 +156,77 @@ def edit_job_detail(request,job_id):
     jobs = Job_detail.objects.get(id=job_id)
     job = Job_Certification.objects.get(id=jobs.job_id.id)
     detail = Job_detail.objects.filter(job_id=job.id)
+    total = detail.count()
+    total_accepted = detail.filter(status="Accepted").count()
+    total_rejected = detail.filter(status="Rejected").count()
     if request.user.is_superuser:
         app_model = Companymodule.objects.all()
-        product = Products.objects.filter(type_of_product="Capital")
+        
     else:
         app_model = Companymodule.objects.filter(tenant_id = request.user.devision.tenant_id.id)
-        product = Products.objects.filter(tenant_id = request.user.devision.tenant_id.id,type_of_product="Capital")
+        
     if request.method == 'POST':
-        form = JobDetailForm(request.POST,instance=jobs,request=request)
-        prod = request.POST.get("product")
+        if job.classification.name == 'Land':
+            form = JobLandForm(request.POST,request=request,instance=jobs)
+        elif job.classification.name == 'Buldings And Other Structures':
+            form = JobBuildingForm(request.POST,request=request,instance=jobs)
+        elif job.classification.name == 'Transport Equipments':
+            form = JobTransportForm(request.POST,request=request,instance=jobs)
+        elif job.classification.name == 'Outdoor Machinery And Equipments':
+            form = JobOutdoorForm(request.POST,request=request,instance=jobs)
+        elif job.classification.name == 'Indoor':
+            form = JobIndoorForm(request.POST,request=request,instance=jobs)
+        else:
+            form =JobWIPForm(request.POST,request=request,instance=jobs)
+
+
         if form.is_valid():
-            tenant =request.user.devision.tenant_id.id
-            inven = Inventory.objects.get(product_id__name = prod,tenant_id=tenant)
-            product_id = product_id=inven.product_id
-            serial_number  = form.cleaned_data['serial_number']
-            describtion = form.cleaned_data['description']
-            status = form.cleaned_data['status']
-            funding = form.cleaned_data['funding'] 
-            brand_id= form.cleaned_data['brand_id'] 
-            jobs.product_id = product_id
-            jobs.serial_number = serial_number
-            jobs.describtion  = describtion 
-            jobs.status  = status
-            jobs.funding  = funding 
-            jobs.brand_id = brand_id
-            jobs.job_id =job 
-            jobs.save()
-            messages.info(request,'Item Updated')
+            asset = form.save(commit=False)
+            asset.job_id =job
+            asset.product = job.product
+            asset.description = job.description
+            asset.save()
+            messages.info(request,'Item added')
             return redirect('inventory:add-job-details' , job.id)
     else:
-        form = JobDetailForm(instance=jobs,request=request)
-
-    template = 'inventory/job/update-job-detail.html'
+        if job.classification.name == 'Land':
+            form = JobLandForm(request=request,instance=jobs)
+        elif job.classification.name == 'Buldings And Other Structures':
+            form = JobBuildingForm(request=request,instance=jobs)
+        elif job.classification.name == 'Transport Equipments':
+            form = JobTransportForm(request=request,instance=jobs)
+        elif job.classification.name == 'Outdoor Machinery And Equipments':
+            form = JobOutdoorForm(request=request,instance=jobs)
+        elif job.classification.name == 'Indoor':
+            form = JobIndoorForm(request=request,instance=jobs)
+        else:
+            form =JobWIPForm(request=request,instance=jobs)
+            
+        
+    if job.classification.name == 'Land':
+        template = 'inventory/job/create-job-land.html'
+    elif job.classification.name == 'Buldings And Other Structures':
+        template = 'inventory/job/create-job-building.html'
+    elif job.classification.name == 'Transport Equipments':
+        template = 'inventory/job/create-job-transport.html'
+    elif job.classification.name == 'Indoor':
+        template = 'inventory/job/create-job-indoor.html'
+    elif job.classification.name == 'Outdoor Machinery And Equipments':
+        template = 'inventory/job/create-job-outdoor.html'
+    else:
+        template = 'inventory/job/create-job-wip.html'
+   
     context = {
         'form':form,
         'heading': 'Update Certification',
         'pageview': 'List of Certification',
         'app_model':app_model,
         'detail':detail,
-        'product':product,
-        'job ':job,
-        'item':jobs
+        'job':job,
+        'item':jobs,
+        'total':total,
+        'total_accepted':total_accepted,
+        'total_rejected':total_rejected
     }
     return render(request,template,context)
 
@@ -278,19 +344,10 @@ def reverse_job(request,job_id):
 def approve_job(request,job_id):
     job = Job_Certification.objects.get(id=job_id)
     detail = Job_detail.objects.filter(job_id=job.id,status="Accepted")
-    for i in detail:
-        try:
-            inventory = Inventory.objects.get(product_id = i.product_id.id,tenant_id=job.tenant_id)
-            try:
-                a = Assets.objects.get(product_id=i.product_id,serial_number=i.serial_number,description=i.description,brand_id=i.brand_id,tenant_id=job.tenant_id)
-            except Assets.DoesNotExist:
-                a = Assets.objects.create(product_id=i.product_id,serial_number=i.serial_number,description=i.description,brand_id=i.brand_id,tenant_id=job.tenant_id)
-                inventory.avialable_quantity += 1
-                inventory.save()
-        except Inventory.DoesNotExist:
-            pass
+    user = request.user
+    CertificationInventoryUpdateThread(job,detail,user).start()
     job.status="Approved"
     job.save()
-    messages.info(request,'Certification Approved ')
+    messages.info(request,'Certification Approved Started')
     return redirect('inventory:add-job-details',job.id)
 

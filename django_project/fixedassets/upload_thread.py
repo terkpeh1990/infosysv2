@@ -8,6 +8,7 @@ from authentication.models import User
 from company.models import Tenants
 from erpproject.settings import  endPoint,key,Sender_Id, EMAIL_HOST, EMAIL_PORT, EMAIL_USE_TLS, EMAIL_HOST_USER, EMAIL_HOST_PASSWORD
 import requests
+from decimal import Decimal
  
 class  DataUploadThread(threading.Thread):
     def __init__(self, dbframe,action):
@@ -105,6 +106,43 @@ class  DataUploadThread(threading.Thread):
 
                 else:
                     pass
+        except IOError:
+            print('fail')
+            pass
+
+
+class  DepreciationThread(threading.Thread):
+    def __init__(self, depreciation,assets):
+        self.depreciation = depreciation 
+        self.assets= assets
+        threading.Thread.__init__(self)
+
+    def calculatedepreciation(self,value,usefullife):
+       currentdepreciation = (value/usefullife)
+       return currentdepreciation
+    
+    def recorddepreciation(self,dep,asset,depreciationvalue):
+        depreciateditem,created= DepreciationDetail.objects.get_or_create(depreciation=dep,asset=asset,depreciationvalue=depreciationvalue)
+    
+    def run(self):
+        print('started')
+        try:
+            for i in self.assets:
+                value = float(i.value)
+                usefullife = float(i.usefullife)
+                asset = i
+                depreciationvalue = self.calculatedepreciation(value,usefullife)
+                decimaldepreciatedvalue = Decimal(depreciationvalue)
+                asset.currentdepreciation = decimaldepreciatedvalue
+                asset.accumulateddepreciation += decimaldepreciatedvalue
+                asset.depreciatedlife +=1
+                dep = self.depreciation
+                self.recorddepreciation(dep,asset,depreciationvalue)
+                asset.save()
+                self.depreciation.depreciationvalue+=depreciationvalue
+                self.depreciation.save()
+            self.depreciation.status = 'Completed'
+            self.depreciation.save()
         except IOError:
             print('fail')
             pass

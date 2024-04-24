@@ -5,6 +5,8 @@ from django.core.validators import RegexValidator
 from authentication.models import *
 from django.conf import settings
 from django.core.validators import RegexValidator
+from django.utils import timezone
+# from fixedassets.models import *
  
 
 
@@ -281,14 +283,16 @@ class Job_Certification(models.Model):
     certification_date =  models.DateTimeField()
     supplier_id = models.ForeignKey(
         Supplier, blank=True, null=True, related_name = 'jobcert',on_delete=models.CASCADE)
-    driver_name = models.CharField(max_length=250,null=True,blank=True)
-    driver_contact =models.CharField(max_length=250,validators=[phone_regex],null=True,blank=True)
     status = models.CharField(
         max_length=10, choices=status, default='Pending')
     quantity = models.PositiveIntegerField(default=0)
     quantity_accepted = models.PositiveIntegerField(default=0)
     quantity_rejected = models.PositiveIntegerField(default=0)
     note  = models.CharField(max_length=1200, null=True, blank=True)
+    classification = models.ForeignKey('fixedassets.Classification', related_name='jobclassification', on_delete=models.CASCADE,null=True)
+    category =models.ForeignKey(Categorys,related_name = 'jobcategory', on_delete=models.CASCADE,null=True, blank=True)
+    product = models.ForeignKey('inventory.Products', related_name='jobproduct', on_delete=models.CASCADE,null=True)
+    description = models.CharField(max_length=255,null=True)
     tenant_id = models.ForeignKey(
         Tenants, blank=True, null=True, related_name = 'job',on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True, blank=True)
@@ -317,18 +321,100 @@ class Job_detail(models.Model):
         ('Rejected', 'Rejected'),
        
     )
-    funding = (
-        ('Internal', 'Internal'),
-        ('Donor', 'Donor'),
+    condition = (
+        ('Yes', 'Yes'),
+        ('No', 'No'),
+    )
+    usage = (
+        ('Public Domain', 'Public Domain'),
+        ('Private Domain', 'Private Domain'),
+    )
+    usagetype = (
+        ('Pool', 'Pool'),
+        ('Assigned', 'Assigned'),
+    )
+    
+    st = (
+        
+        ('Assigned', 'Assigned'),
+        ('Avialable', 'Avialable'),
+    )
+    disposal = (
+        ('Sales', 'Sales'),
+        ('Auction', 'Auction'),
+        ('Donated', 'Donated'),
+        ('Trade-in/Exchanged', 'Trade-in/Exchanged'),
+        ('Transfer-out to Other Govt Entities', 'Transfer-out to Other Govt Entities'),
+        ('Scrapped', 'Scrapped'),
+    )
+    bcondition = (
+        ('Good','Good'),
+        ('Needs Repair/Renovation/Servicing','Needs Repair/Renovation/Servicing'),
+        ('Irrepairable/Unserviceable','Irrepairable/Unserviceable'),
+        ('Not Sighted','Not Sighted'),
+    )
+    accountingstatus = (
+        ('In-progress','In-progress'),
+        ('Completed','Completed'),
+        ('Completed and Transferred','Completed and Transferred'),
        
     )
+
     job_id =models.ForeignKey(Job_Certification, on_delete=models.CASCADE,null=True)
-    product_id =models.ForeignKey(Products, on_delete=models.CASCADE,null=True)
-    brand_id =models.ForeignKey(Brands, on_delete=models.CASCADE,null=True)
-    serial_number = models.CharField(max_length=250,null=True,blank=True)
-    description = models.CharField(max_length=250,null=True,blank=True)
-    status = models.CharField(max_length=10, choices=status,)
-    funding = models.CharField(max_length=100, choices=funding, default = "Internal")
+    description = models.CharField(max_length=255,null=True)
+    registrationnumber = models.CharField(max_length=255,null=True,unique=True, error_messages={'unique':"Vehicle With this Registration number already exist."})
+    accountingrecognition = models.ForeignKey('fixedassets.AccountingRecognition', related_name='jobaccountingrecognition', on_delete=models.CASCADE,null=True)
+    depreciation = models.CharField(max_length=4,choices=condition,null=True)
+    amotization = models.CharField(max_length=4, choices=condition, null=True)
+    usage = models.CharField(max_length=17, choices=usage, null=True)
+    ipsascategory  = models.ForeignKey('fixedassets.IPSASCategory', related_name='jobipsascategory', on_delete=models.CASCADE,null=True)
+    subcategory  = models.ForeignKey('fixedassets.SubCategory', related_name='jobsubcategory', on_delete=models.CASCADE,null=True)
+    gfscategory  = models.ForeignKey('fixedassets.GFSCategory', related_name='jobgfscategory', on_delete=models.CASCADE,null=True)
+    size =  models.CharField(max_length=255,null=True)
+    quantity =models.PositiveIntegerField(default=1,null=True)
+    location  = models.ForeignKey('fixedassets.Location', related_name='jobassetlocation', on_delete=models.CASCADE,null=True)
+    usagetype = models.CharField(max_length=10,choices=usagetype,null=True)
+    ghanapostgpsaddress = models.CharField(max_length=255,null=True)
+    dateplacedinservice = models.DateField(null=True)
+    colour = models.CharField(max_length=255,null=True)
+    chassisno = models.CharField(max_length=255,null=True,unique=True, error_messages={'unique':"Asset With this Chassis/Serial number already exist."})
+    tagno = models.CharField(max_length=255,null=True,unique=True, error_messages={'unique':"Asset With this Chassis/Serial number already exist."})
+    engineserialno = models.CharField(max_length=255,null=True,unique=True, error_messages={'unique':"Asset With this Tag number already exist."})
+    manufacturer = models.ForeignKey('Brands', related_name='jobmanufacturername', on_delete=models.CASCADE,null=True)
+    model = models.CharField(max_length=255,null=True)
+    modelyear = models.IntegerField(null=True)
+    costcenter = models.ForeignKey('company.Devision', related_name='jobassetcostcenter', on_delete=models.CASCADE,null=True)
+    subcostcenter = models.name = models.ForeignKey('company.Sub_Devision', related_name='jobassetsubcostcenter', on_delete=models.CASCADE,null=True)
+    titled = models.CharField(max_length=4, choices=condition, null=True)
+    staffid = models.CharField(max_length=255,null=True)
+    fullname = models.CharField(max_length=255,null=True)
+    position = models.name = models.ForeignKey('authentication.Grade', related_name='jobposition', on_delete=models.CASCADE,null=True)
+    methodofacquisition  = models.ForeignKey('fixedassets.MothodofAcquisition', related_name='jobassetmethodofacquisition', on_delete=models.CASCADE,null=True)
+    conditions = models.CharField(max_length=40,choices=bcondition,null=True)
+    investmentproperty = models.CharField(max_length=4,choices=condition,null=True)
+    fundsource = models.ForeignKey('fixedassets.SourceOfFunding', related_name='jobassetfundsource', on_delete=models.CASCADE,null=True)
+    value = models.DecimalField(max_digits=10, decimal_places=2,default=0.00,null=True)
+    usefullife = models.PositiveIntegerField(default=0,null=True) 
+    desposal_date = models.DateField(null=True)
+    methodofdesposal = models.CharField(max_length=50,choices=disposal,null=True)
+    proceedsfromsales = models.DecimalField(max_digits=10, decimal_places=2,default=0.00,null=True)
+    commencement_date = models.DateField(null=True)
+    expectedcompletion_date = models.DateField(null=True)
+    accountingstatus = models.CharField(max_length=50,choices=accountingstatus,null=True)
+    costbf = models.DecimalField(max_digits=10, decimal_places=2,default=0.00,null=True)
+    currentperiodcost = models.DecimalField(max_digits=10, decimal_places=2,default=0.00,null=True)
+    costcf = models.DecimalField(max_digits=10, decimal_places=2,default=0.00,null=True)
+    comments = models.CharField(max_length=255,null=True)
+    accumulateddepreciation = models.DecimalField(max_digits=10, decimal_places=2,default=0.00,null=True)
+    currentdepreciation = models.DecimalField(max_digits=10, decimal_places=2,default=0.00,null=True)
+    totaldepreciation = models.DecimalField(max_digits=10, decimal_places=2,default=0.00,null=True)
+    netbookvalue = models.DecimalField(max_digits=10, decimal_places=2,default=0.00,null=True)
+    user = models.ForeignKey('authentication.User', related_name='jobcurrentuser', on_delete=models.CASCADE,null=True)
+    product = models.ForeignKey('Products', related_name='jobfixedassetproduct', on_delete=models.CASCADE,null=True)
+    depreciatedlife  = models.PositiveIntegerField(default=0,null=True)
+    usefullifebalance = models.PositiveIntegerField(default=0,null=True)
+    status = models.CharField(max_length=10, choices=status)
+    
 
     def __str__(self):
         return self.product_id.name
@@ -338,8 +424,6 @@ class Job_detail(models.Model):
         db_table = 'Job_detail'
         verbose_name = 'Job_detail'
         verbose_name_plural = 'Job_details'
-
-        
 
 
 class Assets(models.Model):  
@@ -439,7 +523,7 @@ class Requisition_Details(models.Model):
 
     history = HistoricalRecords()
     def __str__(self):
-        return self.product.name
+        return self.product_id.name
 
     class Meta:
             
@@ -535,7 +619,7 @@ class Allocation_Details(models.Model):
     destination_id = models.ForeignKey(Allocation_Destination, on_delete=models.CASCADE)
     history = HistoricalRecords()
     def __str__(self):
-        return self.product.name
+        return self.product_id.name
 
     class Meta:
             
@@ -569,10 +653,15 @@ class Assigned_Assets (models.Model):
         verbose_name_plural = 'User_Assigneds'
 
 class Closing_Stock(models.Model):
-    closing_date = models.DateField(null=True, blank=True)
+    closing_date = models.DateTimeField(null=True, blank=True)
     tenant_id = models.ForeignKey(
         Tenants, blank=True, null=True, related_name = 'close',on_delete=models.CASCADE)
     history = HistoricalRecords()
+
+    def save(self, *args, **kwargs):
+        if not self.id:
+            self.closing_date = timezone.now()
+        super(Closing_Stock,self).save(*args, **kwargs)  
 
     def __str__(self):
         return self.id

@@ -14,27 +14,22 @@ from .filters import *
 from .tasks import *
 import json
 from django.core import serializers
+from fixedassets.models import FixedAsset
+from fixedassets.forms import AssetsAssignmentForm
+from authentication.permission import *
 
 
 
 
 @login_required(login_url='authentication:login')
 @permission_required('inventory.custom_view_requisition',raise_exception = True)
-def requisition(request):
+def personnalrequisition(request):
     if request.user.is_superuser:
         requisition_list = Requisition.objects.all()
         app_model = Companymodule.objects.all()
     else:
-        if request.user.has_perm('inventory.custom_approve_requisition'):
-            requisition_list = Requisition.objects.filter(tenant_id=request.user.devision.tenant_id.id,staff__sub_division = request.user.sub_division)
-        elif request.user.has_perm('inventory.custom_approve_capital_requisition'):
-            requisition_list = Requisition.objects.filter(tenant_id=request.user.devision.tenant_id.id,classification="Capital",status="Awaiting Approval")
-        elif  request.user.has_perm('inventory.custom_approve_consumable_requisition'):
-            requisition_list = Requisition.objects.filter(tenant_id=request.user.devision.tenant_id.id,classification="Consumables",status='Awaiting Approval')
-        elif request.user.has_perm('inventory.custom_issue_requisition'):
-            requisition_list = Requisition.objects.filter(tenant_id=request.user.devision.tenant_id.id,status="Approved")
-        else:
-            requisition_list = Requisition.objects.filter(tenant_id=request.user.devision.tenant_id.id,staff = request.user)
+        
+        requisition_list = Requisition.objects.filter(tenant_id=request.user.devision.tenant_id.id,staff = request.user)
         app_model = Companymodule.objects.filter(tenant_id = request.user.devision.tenant_id.id)
    
     template = 'inventory/requisition/requisition-list.html'
@@ -47,6 +42,109 @@ def requisition(request):
     }
     return render(request,template,context)
 
+@login_required(login_url='authentication:login')
+@permission_required('inventory.custom_approve_requisition',raise_exception = True)
+def pendingrequisition(request):
+    if request.user.is_superuser:
+        requisition_list = Requisition.objects.filter(status="Pending")
+        app_model = Companymodule.objects.all()
+    else:
+        print(request.user)
+       
+        requisition_list = Requisition.objects.filter(tenant_id=request.user.devision.tenant_id.id,staff__sub_division = request.user.sub_division,status="Pending")
+        app_model = Companymodule.objects.filter(tenant_id = request.user.devision.tenant_id.id)
+   
+    template = 'inventory/requisition/requisition-list.html'
+    context = {
+        'requisition_list': requisition_list,
+        'heading': 'List of Requisition',
+        'pageview': 'Requisition',
+        'app_model':app_model,
+       
+    }
+    return render(request,template,context)
+
+@login_required(login_url='authentication:login')
+@permission_required('inventory.custom_approve_capital_requisition',raise_exception = True)
+def awaitingcapitalrequisition(request):
+    if request.user.is_superuser:
+        requisition_list = Requisition.objects.filter(classification="Capital",status="Awaiting Approval")
+        app_model = Companymodule.objects.all()
+    else:
+        requisition_list = Requisition.objects.filter(classification="Capital",tenant_id=request.user.devision.tenant_id.id,status="Awaiting Approval")
+        app_model = Companymodule.objects.filter(tenant_id = request.user.devision.tenant_id.id)
+   
+    template = 'inventory/requisition/requisition-list.html'
+    context = {
+        'requisition_list': requisition_list,
+        'heading': 'List of Requisition',
+        'pageview': 'Requisition',
+        'app_model':app_model,
+       
+    }
+    return render(request,template,context)
+
+@login_required(login_url='authentication:login')
+@permission_required('inventory.custom_approve_consumable_requisition',raise_exception = True)
+def awaitingconsumablerequisition(request):
+    if request.user.is_superuser:
+        requisition_list = Requisition.objects.filter(classification="Consumables",status="Awaiting Approval")
+        app_model = Companymodule.objects.all()
+    else:
+    
+        requisition_list = Requisition.objects.filter(classification="Consumables",tenant_id=request.user.devision.tenant_id.id,status="Awaiting Approval")
+        app_model = Companymodule.objects.filter(tenant_id = request.user.devision.tenant_id.id)
+   
+    template = 'inventory/requisition/requisition-list.html'
+    context = {
+        'requisition_list': requisition_list,
+        'heading': 'List of Requisition',
+        'pageview': 'Requisition',
+        'app_model':app_model,
+       
+    }
+    return render(request,template,context)
+
+@login_required(login_url='authentication:login')
+@permission_required('inventory.custom_issue_requisition',raise_exception = True)
+def requisitionissue(request):
+    if request.user.is_superuser:
+        requisition_list = Requisition.objects.filter(status="Approved")
+        app_model = Companymodule.objects.all()
+    else:
+    
+        requisition_list = Requisition.objects.filter(status="Approved")
+        app_model = Companymodule.objects.filter(tenant_id = request.user.devision.tenant_id.id)
+   
+    template = 'inventory/requisition/requisition-list.html'
+    context = {
+        'requisition_list': requisition_list,
+        'heading': 'List of Requisition',
+        'pageview': 'Requisition',
+        'app_model':app_model,
+       
+    }
+    return render(request,template,context)
+
+@login_required(login_url='authentication:login')
+@permission_required('inventory.custom_view_requisition',raise_exception = True)
+def allrequisition(request):
+    if request.user.is_superuser:
+        requisition_list = Requisition.objects.all()
+        app_model = Companymodule.objects.all()
+    else:
+        requisition_list = Requisition.objects.filter(tenant_id=request.user.devision.tenant_id.id)
+        app_model = Companymodule.objects.filter(tenant_id = request.user.devision.tenant_id.id)
+   
+    template = 'inventory/requisition/requisition-list.html'
+    context = {
+        'requisition_list': requisition_list,
+        'heading': 'List of Requisition',
+        'pageview': 'Requisition',
+        'app_model':app_model,
+       
+    }
+    return render(request,template,context)
 
 @login_required(login_url='authentication:login')
 @permission_required('inventory.custom_create_requisition',raise_exception = True)
@@ -97,7 +195,6 @@ def add_requisition_detail(request,requisition_id):
         form = RequisitionDetailForm(request.POST)
         prod = request.POST.get("product")
         a,_ = prod.split('-----')
-        print(prod)
         if form.is_valid():
             tenant =request.user.devision.tenant_id.id
             inven = Inventory.objects.get(product_id__name = a,tenant_id=tenant)
@@ -213,7 +310,7 @@ def delete_reqisition(request,requisition_id):
     requisition = Requisition.objects.get(id=requisition_id)
     requisition.delete()
     messages.error(request,'Requisition Deleted')
-    return redirect('inventory:requisition-list')
+    return redirect('inventory:personnal-requisition-list')
 
 def send_notification_reqisition(request,requisition_id):
     requisition = Requisition.objects.get(id=requisition_id)
@@ -221,7 +318,7 @@ def send_notification_reqisition(request,requisition_id):
     requisition.release =True
     requisition.save()
     messages.success(request,'Requisition Sent For Approval')
-    return redirect('inventory:requisition-list')
+    return redirect('inventory:personnal-requisition-list')
 
 def reverse_requisition(request,requisition_id):
     requisition = Requisition.objects.get(id=requisition_id)
@@ -231,7 +328,7 @@ def reverse_requisition(request,requisition_id):
         requisition.status = "Pending"
     requisition.save()
     messages.info(request,'Certification Transaction Reversed')
-    return redirect('inventory:add-job-details',job.id)
+    return redirect('inventory:add-requisition-details',requisition.id)
 
 def cancel_requisition(request,requisition_id):
     admin = ['Pending','Approved']
@@ -344,11 +441,13 @@ def list_inventory(request,requisition_id):
         app_model = Companymodule.objects.filter(tenant_id = request.user.devision.tenant_id.id)
     details = Requisition_Details.objects.get(id=requisition_id)
     requisition = Requisition.objects.get(id = details.requisition_id.id)
-    inventory = Inventory.objects.get(product_id = details.product_id.id )
+    inventory = Inventory.objects.get(product_id = details.product_id.id)
     if requisition.classification  == "Consumables":
         inventory_detail =  Inventory_Details.objects.filter(inventory_id = inventory,avialable_quantity__gt = 0).order_by('expiring_date')
+        for i in inventory_detail:
+            print(i.id)
     else:
-        inventory_detail = Assets.objects.filter(product_id=details.product_id.id ,status=False)
+        inventory_detail = FixedAsset.objects.filter(product=details.product_id.id ,status = 'Avialable')
 
     template = 'inventory/requisition/list-inventory.html'
     context = {
@@ -408,43 +507,51 @@ login_required(login_url='authentication:login')
 def store_assets_issue(request,requisition_id,asset_id):
     detail = Requisition_Details.objects.get(id=requisition_id)
     item_inventory = Inventory.objects.get(product_id = detail.product_id)
-    asset = Assets.objects.get(id=asset_id)
+    asset = FixedAsset.objects.get(id=asset_id)
     assets = Assigned_Assets.objects.filter(requisition_id=detail.requisition_id.id,tenant_id =detail.requisition_id.tenant_id.id )
     assets_count = assets.count()
     print(assets_count)
     if request.method == 'POST':
-        form = TypeForm(request.POST)
+        form = AssetsAssignmentForm(request.POST,request=request)
         if form.is_valid():
-            types = form.cleaned_data['type_of_issue']
-            try:
-                assets = Assigned_Assets.objects.filter(requisition_id=detail.requisition_id.id,tenant_id =detail.requisition_id.tenant_id.id )
-                assets_count = assets.count()
-                print(assets_count)
-            except Assigned_Assets.DoesNotExist:
-                assets_count = 0
+            types = form.cleaned_data['usagetype']
+            
+            # try:
+            #     assets = FixedAssetsAssignment.objects.filter(requisition_id=detail.requisition_id.id)
+            #     assets_count = assets.count()
+            #     print(assets_count)
+            # except Assigned_Assets.DoesNotExist:
+            #     assets_count = 0
   
-
             if request.user.has_perm('inventory.custom_issue_requisition') or request.user.has_perm('inventory.custom_create_user'):
-                if assets_count >= detail.quantity_approved:
-                    messages.error(request,"Quantiy Issued cannot be more than " + str(detail.quantity_approved))
+                if detail.quantity_issued >= detail.quantity_approved:
+                    messages.error(request,"Quantiy Issued cannot be more than" + str(detail.quantity_approved))
                     return redirect('inventory:store-assets-issue', detail.id,asset.id)
                 else:
-                    if types == "Staff":
-                        Assigned_Assets.objects.get_or_create(assets_id=asset,product_id=detail.product_id,requisition_id=detail.requisition_id,tenant_id=detail.requisition_id.tenant_id)
-                    else:
-                        Assigned_Assets.objects.get_or_create(assets_id=asset,product_id=detail.product_id,requisition_id=detail.requisition_id,pool=True,tenant_id=detail.requisition_id.tenant_id)
+                    assignment = form.save(commit=False)
+                    assignment.requisition = detail.requisition_id
+                    assignment.status = 'Assigned'
+                    assignment.asset = asset 
+                    assignment.save()
                     item_inventory.avialable_quantity -= 1
                     item_inventory.save()
                     detail.quantity_issued +=1
                     detail.save()
-                    asset.status = True
+                    asset.status = 'Assigned'
+                    asset.costcenter = assignment.costcenter
+                    asset.subcostcenter = assignment.subcostcenter
+                    asset.location = assignment.subcostcenter.location
+                    asset.user = assignment.user
+                    asset.position = assignment.user.grade
+                    asset.usagetype = assignment.usagetype
+                    asset.currentstatus = 'In Use'
                     asset.save()
                 messages.success(request,"Item Issued")
                 return redirect('inventory:list-inventory', detail.id)
     else:
         
-        form = TypeForm()
-    template = 'inventory/requisition/issue-asset.html'
+        form = AssetsAssignmentForm(request=request)
+    template = 'fixedassets/assets/create-assign-asset.html'
     context = {
         'form': form,
         'item_inventory':item_inventory

@@ -11,6 +11,7 @@ from tablib import Dataset
 from django.core.files.storage import FileSystemStorage
 from appsystem.models import *
 from django.views.generic.list import ListView
+from django.utils import timezone
 
 
 @login_required(login_url='authentication:login')
@@ -81,6 +82,7 @@ def closingstock_detail_product(request,closing_stock_product_id):
 
 
 def close_stock(request):
+   
     clsoing_stock = Closing_Stock.objects.create(tenant_id=request.user.devision.tenant_id)
     inventory = Inventory.objects.filter(tenant_id = request.user.devision.tenant_id.id)
     for item in inventory:

@@ -28,82 +28,43 @@
         <div class="table-responsive">
       
             {% #table %}
-                {% #thead %}
-                    {% #tr name ="headrow" %}
-                        {% #th name ="headid" %}ID{% /th %}
-                        {% #th name ="headsup" %}Assets{% /th %}
-                        {% #th name ="headName" %}Serial/Chasis No.{% /th %}
-                        {% #th name ="headsup" %}Description{% /th %}
-                        {% #th name ="headsup" %}Status{% /th %}
-                        {% #th name ="headsup" %}Type of Assignment{% /th %}
-                        {% #th name ="headsup" %}Assigned To{% /th %}
+            {% #thead %}
+                {% #tr name ="headrow" %}
+                    {% #th name ="headbatch" %}Asset ID.{% /th %}
+                    {% #th name ="headintakedate" %}Description{% /th %}
+                    {% #th name ="headbatch" %}Serial/Chasis No.{% /th %}
+                    {% #th name ="headbatch" %}Registration No.{% /th %}
+                    {% #th name ="headbatch" %}Assigned To{% /th %}
+                    {% #th name ="headbatch" %}Location{% /th %}
+                    {% #th name ="headbatch" %}Cureent Status{% /th %}
+                    {% #th name ="headbatch" %}Action{% /th %}
+
+                    
+                
+                    
+                {% /tr %}
+            {% /thead%}
+            {% #tbody %}
+                {% for data in assets_list  %}
+                    {% #tr name ="bodyrow" %}
+                        {% #td name ="sn" %}{{data.asset_id}}{% /td %}
+                        {% #td name ="description" %}{{data.description}}{% /td %}
+                        {% #td name ="sn" %}{{data.chassisno}}{% /td %}
+                        {% #td name ="sn" %}{{data.registrationnumber}}{% /td %}
+                        {% #td name ="sn" %}{{data.user.last_name }} {{data.user.first_name}}{% /td %}
+                        {% #td name ="sn" %}{{data.subcostcenter.name }} ----- {{data.costcenter.name}} {% /td %}
+                        {% #td name ="sn" %}{{data.currentstatus}}{% /td %}
+                        {% #td name ="sn" %}
+                         <a href="{% url 'fixedassets:detail-assets' data.id %}" class="btn btn-sm btn-soft-primary"><i class="mdi mdi-eye-outline"></i></a>
+                        {% /td %}
                         
-                            {% #th name ="headAction" %}
-                                {% if perms.inventory.custom_issue_requisition or  perms.authentication.custom_create_user  %}
-                                    Action
-                                {% endif %}
-                            {% /th %}
+                        
                         
                     {% /tr %}
-                {% /thead%}
-                {% #tbody %}
-                    {% for data in assets_list  %}
-                        {% #tr name ="bodyrow" %}
-                            {% #td name ="groupid" %}{{data.id}} {% /td %}
-                            {% #td name ="groupid" %}{{data.assets_id.product_id.name}} {% /td %}
-                            {% #td name ="groupid" %}{{data.assets_id.serial_number}} {% /td %}
-                            {% #td name ="groupid" %}{{data.assets_id.brand_id.name }}  {{ data.assets_id.description}}  {% /td %}
-                            {% #td name ="status" %}
-                                {% if data.assets_id.status %}
-                                    <span class="badge bg-danger">Issued</span>
-                                
-                                {% else %}
-                                    <span class="badge bg-info">Avialable</span>
-                                        
-                                {% endif %}
-                            {% /td %}
-                            {% #td name ="status" %}
-                                {% if data.pool %}
-                                    <span class="badge bg-warning">Pool</span>
-                                
-                                {% else %}
-                                    <span class="badge bg-pramary">Staff</span>
-                                {% endif %}
-                            {% /td %}
-                            {% if data.pool and data.requisition_id  %}
-                                {% #td name ="status" %}
-                                    {{data.requisition_id.devision.name }} {{ data.requisition_id.sub_division.name }} 
-                                {% /td %}
-                            {% elif not data.pool and data.requisition_id %}
-                                {% #td name ="status" %}
-                                    {{data.requisition_id.staff.first_name }} {{data.requisition_id.staff.last_name }} of  {{ data.requisition_id.staff.devision.name }} {{ data.requisition_id.staff.sub_division.name }} 
-                                {% /td %}
-                            {% else %}
-                                {% #td name ="status" %}
-                                    {{data.allocation_id.devision.name }} {{ data.allocation_id.sub_division.name }} 
-                                {% /td %}
-                            {% endif %}
-                                {% if perms.inventory.custom_view_requisition %}
-                                {% #td name ="groupaction" %}
-                                    {% if perms.inventory.custom_issue_requisition or  perms.authentication.custom_create_user  %}
-                                        {% if data.assets_id.status %}
-                                            {% #actions  %}
-                                                {% comment %} <li data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Re"> {% endcomment %}
-                                                    <a href="#delete_link" id="delete-record" data-record-id="{{ data.assets_id.id }}"  data-bs-toggle="modal" class="delete-record btn btn-soft-primary w-100" data-target="#jobDelete">Return Asset</a>
-                                                {% comment %} </li> {% endcomment %}
-                                                
-                                                
-                                            {% /actions %}
-                                        {% else %}
-                                        {% endif %}
-                                            
-                                    {% endif %}
-                                {% /td %}
-                            {% endif %}
-                        {% /tr %}
-                    {% endfor %}
-                {% /tbody %}
-            {% /table %}
+                {% endfor %}
+            {% /tbody %}
+        {% /table %}
+                
            
             <!-- end table -->
         </div>

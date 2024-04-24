@@ -73,6 +73,16 @@
                             {{form.password2|as_crispy_field}}
                         </div>
                     </div>
+                    <div class=" row mb-2">
+                       
+                        
+                        <div class="col-12 col-sm-12 col-md-12">
+                            <label for="formrow-firstname-input" class="form-label">Select Extra Permissions</label>
+                            {{form.user_permissions|as_crispy_field}}
+                        </div>
+                        
+                    </div>
+                    
                     
                     <div class="mb-2">
                         {% var class=class|default:"btn btn-primary w-md" %}

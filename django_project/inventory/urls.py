@@ -81,10 +81,16 @@ urlpatterns = [
     path('job/<str:job_id>/approve/',job.approve_job,name='approve-job'),
     path('job/<str:job_id>/cancel/',job.cancel_job,name='cancel-job'),
     path('job/<str:job_id>/reverse/',job.reverse_job,name='reverse-job'),
+    path('job/loadproduct/',job.load_product,name='load-product'),
     #certification End
 
     # Requisition Start
-    path('requisition/',requisition.requisition,name='requisition-list'),
+    path('requisition/personnal/',requisition.personnalrequisition,name='personnal-requisition-list'),
+    path('requisition/pending/',requisition.pendingrequisition,name='pending-requisition-list'),
+    path('requisition/awaiting/capital/',requisition.awaitingcapitalrequisition,name='awaiting-capital-requisition-list'),
+    path('requisition/awaiting/consumable/',requisition.awaitingconsumablerequisition,name='awaiting-consumable-requisition-list'),
+    path('requisition/approved/',requisition.requisitionissue,name='approved-requisition-list'),
+
     path('requisition/add/',requisition.add_requisition,name='new-requisition'),
     path('requisition/<str:requisition_id>/details/add/',requisition.add_requisition_detail,name='add-requisition-details'),
     path('requisition/<str:requisition_id>/details/update/',requisition.edit_requisition_detail,name='edit-requisition-details'),

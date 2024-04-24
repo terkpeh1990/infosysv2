@@ -33,7 +33,7 @@
                         
                         {% #tr name ="name" %}
                             {% #td name ="headdate" %}Date :{% /td %}
-                            {% #td name ="username" %}{{ job.certification_date }}{% /td %}
+                            {% #td name ="username" %}{{ job.certification_date|date:"M d, Y" }}{% /td %}
                         {% /tr  %}
                         {% #tr name ="name" %}
                             {% #td name ="headsupplier" %}Supplier :{% /td %}
@@ -161,21 +161,21 @@
         {% endif %}
             <div class="row">
                 <div class="table-responsive">
-                    {% if perms.inventory.custom_create_job_certification %}
+                    <!-- {% if perms.inventory.custom_create_job_certification %}
                         {% if  job.status == 'Pending'  %}
                             <div class="flex-shrink-0 d-flex justify-content-end mb-1" >
                                 <a href="{% url 'inventory:upload-job-details-items' job.id %}" class="btn btn-success  ml-2 mt-2 mb-2">Upload Items</a>
                             </div>
                         {% endif %}
-                    {% endif %}
+                    {% endif %} -->
                     
                     {% #table %}
                         {% #thead %}
                             {% #tr name ="headrow" %}
                                 
-                                {% #th name ="headid" %}Serial/Chasis Number{% /th %}
-                                {% #th name ="headname" %}Product{% /th %}
-                                {% #th name ="headbrand" %}Brand{% /th %}
+                                {% #th name ="headid" %}ID{% /th %}
+                                {% #th name ="headname" %}Classification{% /th %}
+                                {% #th name ="headbrand" %}Product{% /th %}
                                 {% #th name ="headdes" %}Description{% /th %}
                                 {% #th name ="headstatus" %}Status{% /th %}
                                 
@@ -188,9 +188,9 @@
                             {% for data in detail  %}
                                 {% #tr name ="bodyrow" %}
                                     
-                                    {% #td name ="id" %}{{data.serial_number}}{% /td %}
-                                    {% #td name ="product" %}{{data.product_id.name}}{% /td %}
-                                    {% #td name ="brand" %}{{data.brand_id.name}}{% /td %}
+                                    {% #td name ="id" %}{{data.job_id.classification.name}}{% /td %}
+                                    {% #td name ="product" %}{{data.job_id.product.name}}{% /td %}
+                                    {% #td name ="brand" %}{{data.description}}{% /td %}
                                     {% #td name ="des" %}{{data.description  }}{% /td %}
                                     {% #td name ="status" %}
                                     {% if data.status == 'Accepted' %}

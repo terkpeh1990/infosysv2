@@ -3,7 +3,7 @@ from simple_history.models import HistoricalRecords
 from .util import *
 from company.models import Devision,Sub_Devision
 from authentication.models import Grade
-from inventory.models import Products
+
 
 # Create your models here.
 class Classification(models.Model):
@@ -160,6 +160,12 @@ class FixedAsset(models.Model):
         ('On-going', 'On-going'),
         ('Abandoned', 'Abandoned'),
         ('Suspended', 'Suspended'),
+        
+    )
+    st = (
+        
+        ('Assigned', 'Assigned'),
+        ('Avialable', 'Avialable'),
     )
     disposal = (
         ('Sales', 'Sales'),
@@ -212,7 +218,7 @@ class FixedAsset(models.Model):
     fullname = models.CharField(max_length=255,null=True)
     position = models.name = models.ForeignKey('authentication.Grade', related_name='position', on_delete=models.CASCADE,null=True)
     methodofacquisition  = models.ForeignKey('MothodofAcquisition', related_name='assetmethodofacquisition', on_delete=models.CASCADE,null=True)
-    currentstatus = models.CharField(max_length=30,choices=status,null=True)
+    currentstatus = models.CharField(max_length=30,choices=status,default='In Use',null=True)
     conditions = models.CharField(max_length=40,choices=bcondition,null=True)
     investmentproperty = models.CharField(max_length=4,choices=condition,null=True)
     fundsource = models.ForeignKey('SourceOfFunding', related_name='assetfundsource', on_delete=models.CASCADE,null=True)
@@ -228,11 +234,15 @@ class FixedAsset(models.Model):
     currentperiodcost = models.DecimalField(max_digits=10, decimal_places=2,default=0.00,null=True)
     costcf = models.DecimalField(max_digits=10, decimal_places=2,default=0.00,null=True)
     comments = models.CharField(max_length=255,null=True)
-    product = models.ForeignKey('inventory.Products', related_name='assetproduct', on_delete=models.CASCADE,null=True)
     accumulateddepreciation = models.DecimalField(max_digits=10, decimal_places=2,default=0.00,null=True)
+    currentdepreciation = models.DecimalField(max_digits=10, decimal_places=2,default=0.00,null=True)
     totaldepreciation = models.DecimalField(max_digits=10, decimal_places=2,default=0.00,null=True)
     netbookvalue = models.DecimalField(max_digits=10, decimal_places=2,default=0.00,null=True)
-   
+    user = models.ForeignKey('authentication.User', related_name='currentuser', on_delete=models.CASCADE,null=True)
+    product= models.ForeignKey('inventory.Products', related_name='fixedassetproduct', on_delete=models.CASCADE,null=True)
+    status = models.CharField(max_length=30,choices=st,null=True)
+    depreciatedlife  = models.PositiveIntegerField(default=0,null=True)
+    usefullifebalance = models.PositiveIntegerField(default=0,null=True)
     class Meta:
         db_table = 'FixedAssets'
         verbose_name = 'FixedAsset'
@@ -270,7 +280,120 @@ class FixedAsset(models.Model):
                 while FixedAsset.objects.filter(asset_id=self.asset_id, classification=self.classification).exists():
                     self.asset_id = incrementor()
         self.gfscategory = self.ipsascategory.gfscategory
+        self.usefullifebalance = self.usefullife - self.depreciatedlife
+        self.netbookvalue = float(self.value) - float(self.accumulateddepreciation)
         super(FixedAsset, self).save(*args, **kwargs)
     
+
+class FixedAssetsAssignment(models.Model):
+       usagetype = (
+            ('Pool', 'Pool'),
+            ('Assigned', 'Assigned'),
+        )
+
+       status = (
+            ('Returned', 'Returned'),
+            ('Assigned', 'Assigned'),
+        )
+
+       usagetype = models.CharField(max_length=10,choices=usagetype,null=True)
+       asset = models.ForeignKey('FixedAsset', related_name='fixedasset', on_delete=models.CASCADE)
+       user = models.ForeignKey('authentication.User', related_name='assignedto', on_delete=models.CASCADE,null=True)
+       costcenter = models.ForeignKey('company.Devision', related_name='assigntocostcenter', on_delete=models.CASCADE,null=True)
+       subcostcenter = models.name = models.ForeignKey('company.Sub_Devision', related_name='assigntoubcostcenter', on_delete=models.CASCADE,null=True)
+       assigndate = models.DateField(null=True)
+       status = models.CharField(max_length=50,choices=status,default='Assigned',null=True)
+       requisition  = models.ForeignKey('inventory.Requisition', related_name='assignrequisition', on_delete=models.CASCADE,null=True)
+       allocation = models.ForeignKey('inventory.Allocation', related_name='assignallocation', on_delete=models.CASCADE,null=True)
+       returndate = models.DateField(null=True)
+
+       class Meta:
+
+            db_table = 'FixedAssetsAssignments'
+            verbose_name = 'FixedAssetsAssignment'
+            verbose_name_plural = 'FixedAssetsAssignments'
+
+       def __str__(self):
+            return self.user
+
     
+class Depreciation(models.Model):
+    status = (
+            ('In Progress', 'In Progress'),
+            ('Completed', 'Completed'),
+        )
+    accountingyear = models.OneToOneField('accounting.Fiscal_year', related_name='accountingyear', on_delete=models.CASCADE,unique=True, error_messages={'unique':"Depreciation For This Accounting Year Has Already Been Calculated."})
+    depreciationvalue = models.DecimalField(max_digits=10, decimal_places=2,default=0.00,null=True)
+    status = models.CharField(max_length=50,choices=status,default='In Progress',null=True)
+    class Meta:
+    
+        db_table = 'Depreciations'
+        verbose_name = 'Depreciation'
+        verbose_name_plural = 'Depreciations'
+
+        def __str__(self):
+            return self.user
+
+class DepreciationDetail(models.Model):
+    
+    depreciation = models.ForeignKey('Depreciation', related_name='depreciationdetail', on_delete=models.CASCADE,null=True)
+    asset = models.ForeignKey('FixedAsset', related_name='depreciationasset', on_delete=models.CASCADE,null=True)
+    depreciationvalue = models.DecimalField(max_digits=10, decimal_places=2,default=0.00,null=True)
+    
+
+    def __str__(self):
+        return str(self.depreciationvalue)
+
+    class Meta:
+        db_table = 'DepreciationDetails'
+        managed = True
+        verbose_name = 'DepreciationDetail'
+        verbose_name_plural = 'DepreciationDetails'
+
+
+class Reevaluation(models.Model):
+   
+    accountingyear = models.ForeignKey('accounting.Fiscal_year', related_name='evaluateaccountingyear', on_delete=models.CASCADE)
+    asset = models.ForeignKey('FixedAsset', related_name='evaluationasset', on_delete=models.CASCADE,null=True)
+    oldvalue = models.DecimalField(max_digits=10, decimal_places=2,default=0.00,null=True)
+    newvalue = models.DecimalField(max_digits=10, decimal_places=2,default=0.00,null=True)
+    previoususefullife = models.PositiveIntegerField(default=0,null=True) 
+    usefullife = models.PositiveIntegerField(default=0,null=True) 
+    class Meta:
+    
+        db_table = 'Reevaluations'
+        verbose_name = 'Reevaluation'
+        verbose_name_plural = 'Reevaluations'
+
+        def __str__(self):
+            return self.asset.description
+
+
+class Disposals(models.Model):
+
+    disposal = (
+        ('Sales', 'Sales'),
+        ('Auction', 'Auction'),
+        ('Donated', 'Donated'),
+        ('Trade-in/Exchanged', 'Trade-in/Exchanged'),
+        ('Transfer-out to Other Govt Entities', 'Transfer-out to Other Govt Entities'),
+        ('Scrapped', 'Scrapped'),
+    )
+       
+    accountingyear = models.ForeignKey('accounting.Fiscal_year', related_name='disposalaccountingyear', on_delete=models.CASCADE)
+    asset = models.ForeignKey('FixedAsset', related_name='disposalasset', on_delete=models.CASCADE,null=True)
+    desposal_date = models.DateField(null=True)
+    methodofdesposal = models.CharField(max_length=50,choices=disposal,null=True)
+    proceedsfromsales = models.DecimalField(max_digits=18, decimal_places=2,default=0.00,null=True)
+    class Meta:
+    
+        db_table = 'Disposals'
+        verbose_name = 'Disposal'
+        verbose_name_plural = 'Disposals'
+
+        def __str__(self):
+            return self.asset.description
+
+
+
 

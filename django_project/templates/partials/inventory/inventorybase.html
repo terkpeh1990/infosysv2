@@ -149,6 +149,65 @@
                 });
             
                 });
+                $("#id_category").change(function () {
+                    var SubDevisionId = $(this).val()
+                    console.log(SubDevisionId)
+                var url = '/inventory/job/loadproduct/';  // get the url of the `load_cities` view
+                $.ajax({                       // initialize an AJAX request
+                    url: url,                    // set the url of the request (= localhost:8000/hr/ajax/load-cities/)
+                    data: {
+                    'category': SubDevisionId     // add the country id to the GET parameters
+                    },
+                    success: function (data) {   // `data` is the return of the `load_cities` view function
+                    $("#id_product").html(data);  // replace the contents of the city input with the data that came from the server
+                    }
+                });
+            
+                });
+                $("#id_ipsascategory").change(function () {
+                    var DevisionId = $(this).val()
+                    console.log(DevisionId)
+                var url = '/fixedassets/assets/load_subcategory/';  // get the url of the `load_cities` view
+                var IpsascategoryId = $(this).val();  // get the selected country ID from the HTML input
+                
+                $.ajax({                       // initialize an AJAX request
+                    url: url,                    // set the url of the request (= localhost:8000/hr/ajax/load-cities/)
+                    data: {
+                    'ipsascategory': IpsascategoryId      // add the country id to the GET parameters
+                    },
+                    success: function (data) {   // `data` is the return of the `load_cities` view function
+                    $("#id_subcategory").html(data);  // replace the contents of the city input with the data that came from the server
+                    }
+                });
+            
+                });
+                document.addEventListener("DOMContentLoaded", function() {
+                    var deleteAnchors = document.getElementsByClassName("delete-record");
+                    var deleteModalAnchor = document.getElementById("deleteModalAnchor");
+                    Array.from(deleteAnchors).forEach(function(anchor) {
+                    anchor.addEventListener("click", function(event) {
+                        event.preventDefault();
+                        var recordId = this.getAttribute("data-record-id"); 
+                        deleteModalAnchor.setAttribute("data-record-id", recordId);
+                        deleteModalAnchor.setAttribute("href", "/inventory/job/" + recordId + "/approve/");
+                        deleteModalAnchor.style.display = "block";
+                    });
+                    });
+                });
+                document.addEventListener("DOMContentLoaded", function() {
+                    var deleteAnchors = document.getElementsByClassName("delete-record1");
+                    var deleteModalAnchor = document.getElementById("deleteModalAnchor1");
+                    Array.from(deleteAnchors).forEach(function(anchor) {
+                    anchor.addEventListener("click", function(event) {
+                        event.preventDefault();
+                        var recordId = this.getAttribute("data-record-id1"); 
+                        deleteModalAnchor.setAttribute("data-record-id1", recordId);
+                        deleteModalAnchor.setAttribute("href", "/inventory/restock/" + recordId1 + "/cancel/");
+                        deleteModalAnchor.style.display = "block";
+                    });
+                    });
+                });
+
             </script>
          {% endblock %}
     

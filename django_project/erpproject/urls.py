@@ -36,6 +36,7 @@ urlpatterns = [
     path('supplychain/',include('supply_chain.urls',namespace='supplychain')),
     path('purchaseorder/',include('purchase_order.urls',namespace='purchaseorder')),
     path('fixedassets/',include('fixedassets.urls',namespace='fixedassets')),
+    path('helpdesk/',include('helpdesk.urls',namespace='helpdesk')),
 ]
 
 handler404 = 'authentication.auth.error_404_view'

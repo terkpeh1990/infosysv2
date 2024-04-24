@@ -44,6 +44,8 @@ class Devision(models.Model):
 class Sub_Devision(models.Model):
     name = models.CharField(max_length=100)
     code = models.CharField(max_length=255,null=True)
+    location = models.ForeignKey('fixedassets.Location', related_name='subdevisionlocation', 
+        on_delete=models.CASCADE,null=True)
     tenant_id = models.ForeignKey(
         Tenants, blank=True, null=True, related_name = 'tenant_devisions',on_delete=models.CASCADE)
     devision  = models.ForeignKey(

@@ -57,7 +57,7 @@
             <li>
                 <a href="javascript: void(0);" class="has-arrow waves-effect">
                 <i class="bx bx-data"></i>
-                <span key="t-products">Certififaction</span>
+                <span key="t-products">Certififactions</span>
                 </a>
                 <ul class="sub-menu" aria-expanded="false">
                     
@@ -80,14 +80,35 @@
           <li>
             <a href="javascript: void(0);" class="has-arrow waves-effect">
               <i class="bx bx-pyramid"></i>
-              <span key="t-products">Requisition</span>
+              <span key="t-products">Requisitions</span>
             </a>
             <ul class="sub-menu" aria-expanded="false">
                 
                
                 {% if perms.inventory.custom_view_requisition %}
                     <li>
-                        <a href="{% url 'inventory:requisition-list' %}" key="t-product">Requisition</a>
+                        <a href="{% url 'inventory:personnal-requisition-list' %}" key="t-product">Requisition</a>
+                    </li> 
+                {% endif %}
+                {% if perms.inventory.custom_approve_requisition %}
+                    <li>
+                        <a href="{% url 'inventory:pending-requisition-list' %}" key="t-product">Pending Requisition</a>
+                    </li> 
+                {% endif %}
+                
+                {% if perms.inventory.custom_approve_capital_requisition %}
+                    <li>
+                        <a href="{% url 'inventory:awaiting-capital-requisition-list' %}" key="t-product">Awaiting Requisition</a>
+                    </li> 
+                {% endif %}
+                {% if perms.inventory.custom_approve_consumable_requisition %}
+                    <li>
+                        <a href="{% url 'inventory:awaiting-consumable-requisition-list' %}" key="t-product">Awaiting Requisition</a>
+                    </li> 
+                {% endif %}
+                {% if perms.inventory.custom_issue_requisition %}
+                    <li>
+                        <a href="{% url 'inventory:approved-requisition-list' %}" key="t-product">Approved Requisition</a>
                     </li> 
                 {% endif %}
                
@@ -99,7 +120,7 @@
           <li>
             <a href="javascript: void(0);" class="has-arrow waves-effect">
               <i class="bx bx-infinite"></i>
-              <span key="t-products">Allocation</span>
+              <span key="t-products">Allocations</span>
             </a>
             <ul class="sub-menu" aria-expanded="false">
                 
@@ -148,12 +169,12 @@
                         <a href="{% url 'inventory:expire-products' %}" key="t-product">Expiring Product Alert</a>
                     </li> 
                 {% endif %}
-                {% if perms.authentication.custom_view_report %}
+                <!-- {% if perms.authentication.custom_view_report %}
                         
                     <li>
                         <a href="{% url 'inventory:aviable-assets' %}" key="t-product">Avialable Assets</a>
                     </li> 
-                {% endif %}
+                {% endif %} -->
                 {% if perms.authentication.custom_view_report %}
                     <li>
                         <a href="{% url 'inventory:assigned-assets' %}" key="t-product">Assigned Assets</a>

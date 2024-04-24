@@ -21,6 +21,7 @@
 {% endblock %}
 {% block contents %}
 <div class="row">
+    
     <div class="col-lg-12">
         {% #card title="List Of Assets" %}
         
@@ -28,9 +29,27 @@
             {% if perms.fixedassets.custom_create_fixedassets %}
                 <div class="flex-shrink-0 d-flex justify-content-end mb-1" >
                     <a href="{% url 'fixedassets:select-classification' %}" class="btn btn-primary m-2 ">Add New Asset</a>
-                    <a href="{% url 'fixedassets:upload-classification' %}" class="btn btn-success  ml-2 mt-2 mb-2">Upload Asset</a>
+                    <a href="{% url 'fixedassets:report-selectclassification' %}" class="btn btn-success  ml-2 mt-2 mb-2">Export Excel</a>
                 </div>
             {% endif %}
+            <form method="get" novalidate>
+                <div class="row mt-3 mb-3">
+                    <div class="col-6 col-sm-12 col-md-6">
+                        <!-- <label for="formrow-firstname-input" class="form-label">Depreciation</label> -->
+                        {{ myFilter.form.classification|as_crispy_field }}
+                    </div>
+                    <div class="col-6 col-sm-12 col-md-6">
+                        <!-- <label for="formrow-firstname-input" class="form-label">Depreciation</label> -->
+                        {{ myFilter.form.category|as_crispy_field }}
+                    </div>
+                </div>
+                <div class="mb-2">
+                    {% var class=class|default:"btn btn-primary w-md" %}
+                    {% #button {% attrs class %} Filter {% /button %}
+                </div>
+                
+            </form>
+            
             {% #table %}
                 {% #thead %}
                     {% #tr name ="headrow" %}
@@ -55,14 +74,11 @@
                                 
                                     {% #actions name ="groupedit" %}
                                   
-                                        <li data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Edit">
-                                            <a href="{% url 'fixedassets:edit-assets' data.id %}" class="btn btn-sm btn-soft-info"><i class="mdi mdi-pencil-outline"></i></a>
+                                        
+                                        <li data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Asset Details">
+                                            <a href="{% url 'fixedassets:detail-assets' data.id %}" class="btn btn-sm btn-soft-primary"><i class="mdi mdi-eye-outline"></i></a>
                                         </li>
                                     
-                                        <li data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Delete">
-                                            
-                                            <a href="#delete_link" id="delete-record" data-record-id="{{ data.id }}" data-bs-toggle="modal" class="delete-record btn btn-sm btn-soft-danger" data-target="#jobDelete"><i class="mdi mdi-delete-outline"></i></a>
-                                        </li>
                                        
                                     
                                     {% /actions %}

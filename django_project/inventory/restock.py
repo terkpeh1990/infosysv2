@@ -29,7 +29,7 @@ def restock(request):
     template = 'inventory/restock/restock.html'
     context = {
         'restock_list': restock_list,
-        'heading': 'List of Restocks',
+        'heading': 'Certification Status',
         'pageview': 'Restock',
         'app_model':app_model
     }
@@ -83,11 +83,14 @@ def add_restock_detail(request,restock_id):
         form = RestockDetailForm(request.POST)
         prod = request.POST.get("product")
         a,_ = prod.split('-----')
+        print(a)
         print(prod)
+        
         if form.is_valid():
             tenant =request.user.devision.tenant_id.id
+            product =Products.objects.get(name=a,tenant_id=tenant)
+            print(product)
             inven = Inventory.objects.get(product_id__name = a,tenant_id=tenant)
-            
             quantity = form.cleaned_data['quantity']
             expiring_date = form.cleaned_data['expiring_date']
             Restock_details.objects.get_or_create(restock_id=restock,product_id=inven.product_id,quantity=quantity,expiring_date=expiring_date)

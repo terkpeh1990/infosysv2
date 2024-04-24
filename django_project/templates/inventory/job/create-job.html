@@ -18,25 +18,42 @@
                 {% #form %}
                     {% csrf_token %}
                     <div class=" row mb-3">
-                        <div class="col-3 col-sm-12 col-md-4">
+                        <div class="col-4 col-sm-12 col-md-4">
                             <label for="formrow-region-input" class="form-label">Date</label>
                             {{form.certification_date|as_crispy_field}}
                         </div>
-                       
-                        <div class="col-3 col-sm-12 col-md-4">
-                            <label for="formrow-region-input" class="form-label">Driver Name</label>
-                            {{form.driver_name|as_crispy_field}}
+                        <div class="col-4 col-sm-12 col-md-4">
+                            <label for="formrow-region-input" class="form-label">Select Supplier</label>
+                            {{form.supplier_id|as_crispy_field}}
                         </div>
-                        <div class="col-3 col-sm-12 col-md-4">
-                            <label for="formrow-region-input" class="form-label">Driver Contact</label>
-                            {{form.driver_contact|as_crispy_field}}
+                        <div class="col-4 col-sm-12 col-md-4">
+                            <label for="formrow-region-input" class="form-label">Select Classification</label>
+                            {{form.classification|as_crispy_field}}
                         </div>
                        
                     </div>
                     <div class=" row mb-3">
                         
+                        <div class="col-4 col-sm-12 col-md-4">
+                            <label for="formrow-region-input" class="form-label">Select Category</label>
+                            {{form.category|as_crispy_field}}
+                        </div>
+                        
+                        <div class="col-4 col-sm-12 col-md-4">
+                            <label for="formrow-region-input" class="form-label">Select Product</label>
+                            {{form.product|as_crispy_field}}
+                        </div>
+                        <div class="col-4 col-sm-12 col-md-4">
+                            <label for="formrow-region-input" class="form-label">Description</label>
+                            {{form.description|as_crispy_field}}
+                        </div>
+                        
+                       
+                    </div>
+                    <div class=" row mb-3">
+                        
                         <div class="col-12 col-sm-12 col-md-12">
-                            <label for="formrow-region-input" class="form-label">Inspection Note.</label>
+                            <label for="formrow-region-input" class="form-label">Leave An Inspection Note.</label>
                             {{form.note|as_crispy_field}}
                         </div>
                     </div>

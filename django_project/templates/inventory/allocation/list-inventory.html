@@ -129,10 +129,12 @@
                     {% #table %}
                         {% #thead %}
                             {% #tr name ="headrow" %}
-                                {% #th name ="headexpiredate" %}Status{% /th %}
-                                {% #th name ="headbatch" %}Serial/Chasis No.{% /th %}
-                                {% #th name ="headintakedate" %}Description{% /th %}
-                                {% #th name ="headAction" %} Action {% /th %}
+                            {% #th name ="headexpiredate" %}Status{% /th %}
+                            {% #th name ="headexpiredate" %}Assets ID{% /th %}
+                            {% #th name ="headbatch" %}Serial/Chasis No.{% /th %}
+                            {% #th name ="headbatch" %}Regisration No. No.{% /th %}
+                            {% #th name ="headintakedate" %}Description{% /th %}
+                            {% #th name ="headAction" %} Action {% /th %}
                                 
                             {% /tr %}
                         {% /thead%}
@@ -140,15 +142,17 @@
                             {% for data in inventory_detail   %}
                                 {% #tr name ="bodyrow" %}
                                 {% #td name ="status" %}
-                                {% if data.status %}
-                                    <span class="badge bg-danger">Issued</span>
-                                {% else %}
-                                    <span class="badge bg-info">Avialable</span>
-                                {% endif %}
-                            
-                            {% /td %}
-                                    {% #td name ="sn" %}{{data.serial_number}}{% /td %}
-                                    {% #td name ="description" %}{{data.brand_id.name }} {{data.description}}{% /td %}
+                                    {% if data.status  == 'Avialable' %}
+                                        <span class="badge bg-info">{{data.status}}</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">{{data.status}}</span>
+                                    {% endif %}
+                                
+                                {% /td %}
+                                    {% #td name ="sn" %}{{data.asset_id}}{% /td %}
+                                    {% #td name ="sn" %}{{data.chassisno}}{% /td %}
+                                    {% #td name ="sn" %}{{data.registrationnumber}}{% /td %}
+                                    {% #td name ="description" %}{{data.description}}{% /td %}
                                     
                                     {% #td name ="status" %}
                                         {% #actions name ="groupedit" %}

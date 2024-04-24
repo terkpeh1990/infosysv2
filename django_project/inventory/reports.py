@@ -155,11 +155,8 @@ def assigned_assets(request):
         assets_list = Assigned_Assets.objects.filter(assets_id__status=True)
         app_model = Companymodule.objects.all()
     else:
-        if request.user.has_perm('inventory.custom_approve_capital_requisition') or request.user.has_perm('inventory.custom_approve_consumable_requisition') or request.user.has_perm('inventory.custom_issue_requisition') or request.user.has_perm('authentication.custom_create_user'):
-            assets_list = Assigned_Assets.objects.filter(tenant_id=request.user.devision.tenant_id.id,assets_id__status=True)
-            
-        else:
-            assets_list = Assigned_Assets.objects.filter(tenant_id=request.user.devision.tenant_id.id, requisition_id__staff = request.user,assets_id__status=True)
+        
+        assets_list = FixedAsset.objects.filter(status='Assigned')
         app_model = Companymodule.objects.filter(tenant_id = request.user.devision.tenant_id.id)
 
     template = 'inventory/reports/assigned-assets.html'

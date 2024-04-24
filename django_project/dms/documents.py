@@ -24,8 +24,6 @@ from django.db.models import F
 from purchase_order.models import *
 
 
-
-
 @login_required(login_url='authentication:login')
 @permission_required('dms.custom_create_document',raise_exception = True)
 def filemanager(request):
@@ -546,6 +544,7 @@ def save_to_send(request,document_id):
 
 @login_required(login_url='authentication:login')
 def add_attachment(request,document_id):
+    
     if request.user.is_superuser:
         app_model = Companymodule.objects.all()
     else:
@@ -591,6 +590,7 @@ def view_attachment(request, document_id):
     else:
         app_model = Companymodule.objects.filter(tenant_id = request.user.devision.tenant_id.id)
     pdf_document = get_object_or_404(Documentattachement, pk=document_id)
+  
     return render(request, 'dms/view-attachment.html', {'pdf_document':pdf_document,'app_model':app_model})
 
 

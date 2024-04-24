@@ -42,7 +42,7 @@
                                     <div class="dropdown-divider"></div>
                                     <a class="dropdown-item" href="{% url 'accounting:currency-list' %}"><i class="bx bx-dollar-circle font-size-16 align-middle me-1"></i>Accounting</a>
                                     <a class="dropdown-item" href="{% url 'dms:filemanager-list' %}"><i class="bx bx-dollar-circle font-size-16 align-middle me-1"></i>Documents</a>
-                                    <a class="dropdown-item" href="{% url 'inventory:supplier-list' %}"><i class="bx bx-dollar-circle font-size-16 align-middle me-1"></i>Purchase Order</a>
+                                    <a class="dropdown-item" href="{% url 'inventory:assetdashboard' %}"><i class="bx bx-dollar-circle font-size-16 align-middle me-1"></i>Purchase Order</a>
                                     <div class="dropdown-divider"></div>
                                 <div class="dropdown-divider"></div>
                                 {% else %}
@@ -65,7 +65,11 @@
                                     
                                     {% endif %}
                                     {% if app.app.name  == 'FixedAssets' and app.status %}
-                                        <a class="dropdown-item" href="{% url 'fixedassets:classification-list' %}"><i class="bx bx-dollar-circle font-size-16 align-middle me-1"></i>Fixed Assets</a>
+                                        <a class="dropdown-item" href="{% url 'fixedassets:assetdashboard' %}"><i class="bx bx-dollar-circle font-size-16 align-middle me-1"></i>Fixed Assets</a>
+                                        <div class="dropdown-divider"></div>
+                                    {% endif %}
+                                    {% if app.app.name  == 'HelpDesk' and app.status %}
+                                        <a class="dropdown-item" href="{% url 'helpdesk:team-list' %}"><i class="bx bx-dollar-circle font-size-16 align-middle me-1"></i>HelpDesk</a>
                                         <div class="dropdown-divider"></div>
                                     {% endif %}
                                    {% endfor %}

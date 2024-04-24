@@ -71,10 +71,27 @@ urlpatterns = [
     #Assets Start
     path('assets/',assets.assets,name='asset-list'),
     path('assets/selectclassification/',assets.add_selectclassification,name='select-classification'),
+    path('assets/reportselect/',assets.report_selectclassification,name='report-selectclassification'),
+    path('assets/reportselect/<str:assetclassification>/',assets.export_excel,name='export-excel'),
     path('assets/<str:formclassification>/add/',assets.add_assets,name='new-asset'),
     path('assets/load_subcategory/',assets.load_subcategory,name="load-subcategory"),
+    path('assets/load_user/',assets.load_user,name="load_user"),
     path('assets/<str:asset_id>/update/',assets.edit_assets,name='edit-assets'),
-    path('assets/<str:asset_id>/delete/',assets.delete_asset,name='delete-assets')
+    path('assets/<str:asset_id>/delete/',assets.delete_asset,name='delete-assets'),
+    path('assets/<str:asset_id>/assign/',assets.assigned_assets,name='assigned-assets'),
+    path('assets/<str:asset_id>/view_assets/',assets.view_assets,name='detail-assets'),
+    path('assets/<str:assign_id>/return/',assets.return_assets,name='returned-assets'),
+    path('assets/depreciation/',assets.depreciation,name='depreciation-list'),
+    path('assets/depreciation/new/',assets.run_depreciation,name='new-depreciation'),
+    path('assets/depreciaition/<depreciation_id>',assets.view_depreciation,name='detail-depreciation'),
+    path('assets/duereevaluation',assets.reevaluation,name='reevaluation-list'),
+    path('assets/<str:asset_id>/evaluate/',assets.reevaluate_asset,name='reevaluate-asset'),
+    path('assets/disposal/',assets.disposal,name='disposal-list'),
+    path('assets/<str:asset_id>/disposal/',assets.disposal_asset,name='dispose-asset'),
+    path('assets/dashboard/',assets.assetdashboard,name='assetdashboard'),
+
+
+    
     # path('methodofacquisition/<str:methodofacquisition_id>/delete/',methodofacquisition.delete_methodofacquisition,name='delete-methodofacquisition'),
     # path('methodofacquisition/upload/',methodofacquisition.methodofacquisition_upload,name='upload-methodofacquisition'),
     #MAssets End

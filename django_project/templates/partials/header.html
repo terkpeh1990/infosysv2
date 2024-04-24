@@ -50,8 +50,9 @@
                                     <div class="dropdown-divider"></div>
                                         <a class="dropdown-item" href="{% url 'inventory:supplier-list' %}"><i class="bx bx-dollar-circle font-size-16 align-middle me-1"></i>Purchase Order</a>
                                     <div class="dropdown-divider"></div>
-                                        <a class="dropdown-item" href="{% url 'fixedassets:classification-list' %}"><i class="bx bx-dollar-circle font-size-16 align-middle me-1"></i>Fixed Assets</a>
-                                    
+                                        <a class="dropdown-item" href="{% url 'fixedassets:assetdashboard' %}"><i class="bx bx-dollar-circle font-size-16 align-middle me-1"></i>Fixed Assets</a>
+                                        <div class="dropdown-divider"></div>
+                                        <a class="dropdown-item" href="{% url 'helpdesk:ticketdashboard' %}"><i class="bx bx-dollar-circle font-size-16 align-middle me-1"></i>HelpDesk</a>
                                 {% else %}
                                     {% if perms.authentication.custom_create_user %}
                                         <a class="dropdown-item" href="{% url 'authentication:user-list' %}"><i class="bx bxs-user-detail font-size-16 align-middle me-1"></i>Authentication</a>
@@ -72,10 +73,14 @@
                                         <div class="dropdown-divider"></div>
                                     {% endif %}
                                     {% if app.app.name  == 'FixedAssets' and app.status %}
-                                        <a class="dropdown-item" href="{% url 'fixedassets:classification-list' %}"><i class="bx bx-dollar-circle font-size-16 align-middle me-1"></i>Fixed Assets</a>
+                                        <a class="dropdown-item" href="{% url 'fixedassets:assetdashboard' %}"><i class="bx bx-dollar-circle font-size-16 align-middle me-1"></i>Fixed Assets</a>
                                         <div class="dropdown-divider"></div>
                                     {% endif %}
-                                   
+                                    {% if app.app.name  == 'HelpDesk' and app.status %}
+                                        <a class="dropdown-item" href="{% url 'helpdesk:ticketdashboard' %}"><i class="bx bx-dollar-circle font-size-16 align-middle me-1"></i>HelpDesk</a>
+                                        <div class="dropdown-divider"></div>
+                                    {% endif %}
+                                    
                                     <!-- <div class="dropdown-divider"></div> -->
                                 {% endfor %}
                             {% endif %}

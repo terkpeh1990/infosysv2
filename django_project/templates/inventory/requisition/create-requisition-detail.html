@@ -130,7 +130,7 @@
                 <a href="{% url 'inventory:reverse-requisition' requisition.id %}" class="btn btn-soft-danger w-100">Reverse</a>
             {% endif %}
             {% if requisition.release %}
-                <a href="{% url 'inventory:requisition-list' %}" class="btn btn-soft-primary w-100">Close</a>
+                <a href="{% url 'inventory:personnal-requisition-list' %}" class="btn btn-soft-primary w-100">Close</a>
                 
             {% else %}
                 <a href="{% url 'inventory:send-requisition' requisition.id  %}" class="btn btn-soft-primary w-100">Close</a>
@@ -155,7 +155,7 @@
                                     <datalist id="productlist">
                                         {% for item in product %}
                                          
-                                            <option value="{{item.name}}  {{item.unit_of_measurement.name}}" >
+                                            <option value="{{item.name}}-----{{item.unit_of_measurement.name}}" >
                         
                                         {% endfor %}
                                     </datalist>

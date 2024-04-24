@@ -25,19 +25,27 @@
 
                     </div>
                     <div class=" row mb-4">
-                            <div class="col-3 col-sm-12 col-md-3">
-                                <label for="formrow-firstname-input" class="form-label">Classification</label>
-                                {{form.classification|as_crispy_field}}
-                            </div>
-                            <div class="col-3 col-sm-12 col-md-3">
+                        <div class="col-6 col-sm-12 col-md-6">
+                            <label for="formrow-firstname-input" class="form-label">Select Classification</label>
+                            {{form.classification|as_crispy_field}}
+                        </div>
+                        <div class="col-6 col-sm-12 col-md-6">
+                            <label for="formrow-firstname-input" class="form-label">Select Product</label>
+                            {{form.product|as_crispy_field}}
+                        </div>
+                        
+                    </div>
+                    <div class=" row mb-4">
+                            
+                            <div class="col-4 col-sm-12 col-md-4">
                                 <label for="formrow-firstname-input" class="form-label">Description</label>
                                 {{form.description|as_crispy_field}}
                             </div>
-                            <div class="col-3 col-sm-12 col-md-3">
+                            <div class="col-4 col-sm-12 col-md-4">
                                 <label for="formrow-firstname-input" class="form-label">Registration No.</label>
                                 {{form.registrationnumber|as_crispy_field}}
                             </div>
-                            <div class="col-3 col-sm-12 col-md-3">
+                            <div class="col-4 col-sm-12 col-md-4">
                                 <label for="formrow-firstname-input" class="form-label">Accounting Recognition</label>
                                 {{form.accountingrecognition|as_crispy_field}}
                             </div>
@@ -61,16 +69,13 @@
                     </div>
                     
                     <div class=" row mb-4 form-group">
-                        <div class="col-4 col-sm-12 col-md-4">
+                        <div class="col-6 col-sm-12 col-md-6">
                             <label for="formrow-firstname-input" class="form-label">Unit/Quantity</label>
                             {{form.quantity|as_crispy_field}}
                         </div>
-                        <div class="col-4 col-sm-12 col-md-4">
-                            <label for="formrow-firstname-input" class="form-label">Location</label>
-                            {{form.location|as_crispy_field}}
-                        </div>
+                        
                        
-                        <div class="col-4 col-sm-12 col-md-4">
+                        <div class="col-6 col-sm-12 col-md-6">
                             <label for="formrow-firstname-input" class="form-label">Date Placed in Service</label>
                             {{form.dateplacedinservice|as_crispy_field}}
                         </div>
@@ -113,30 +118,10 @@
                     
                   
                     <h2></h2>
+                    
                     <div class=" row mb-4">
                         
-                        <div class="col-6 col-sm-12 col-md-6">
-                            <label for="formrow-firstname-input" class="form-label">Cost Center</label>
-                            {{form.costcenter|as_crispy_field}}
-                        </div>
-                        <div class="col-6 col-sm-12 col-md-6">
-                            <label for="formrow-firstname-input" class="form-label">Sub Cost Center</label>
-                            {{form.subcostcenter|as_crispy_field}}
-                        </div>
-                        
-                        
-                    </div>
-                    <div class=" row mb-4">
-                        <div class="col-4 col-sm-12 col-md-4">
-                            <label for="formrow-firstname-input" class="form-label">Usage  Type</label>
-                            {{form.usagetype|as_crispy_field}}
-                        </div>
-                        
-                        <div class="col-4 col-sm-12 col-md-4">
-                            <label for="formrow-firstname-input" class="form-label">Staff ID</label>
-                            {{form.staffid|as_crispy_field}}
-                        </div>
-                        <div class="col-4 col-sm-12 col-md-4">
+                        <div class="col-12 col-sm-12 col-md-12">
                             <label for="formrow-firstname-input" class="form-label">Aquisition Method</label>
                             {{form.methodofacquisition|as_crispy_field}}
                         </div>
@@ -145,15 +130,12 @@
                     <hr>
                     <div class=" row mb-4">
                         
-                        <div class="col-4 col-sm-12 col-md-4">
-                            <label for="formrow-firstname-input" class="form-label">Current Status</label>
-                            {{form.currentstatus|as_crispy_field}}
-                        </div>
-                        <div class="col-4 col-sm-12 col-md-4">
+                        
+                        <div class="col-6 col-sm-12 col-md-6">
                             <label for="formrow-firstname-input" class="form-label">Condition</label>
                             {{form.conditions|as_crispy_field}}
                         </div>
-                        <div class="col-4 col-sm-12 col-md-4">
+                        <div class="col-6 col-sm-12 col-md-6">
                             <label for="formrow-firstname-input" class="form-label">Investment Property</label>
                             {{form.investmentproperty|as_crispy_field}}
                         </div>

@@ -12,6 +12,7 @@ from django.core.files.storage import FileSystemStorage
 from appsystem.models import *
 from django.views.generic.list import ListView
 import os
+from fixedassets.models import *
 
 
 
@@ -153,9 +154,9 @@ def detail_product(request,product_id):
     inventory = Inventory.objects.get(id=product_id)
     product=Products.objects.get(id=inventory.product_id.id)
     inventory_detail = Inventory_Details.objects.filter(inventory_id=inventory.id)
-    assets=Assets.objects.filter(product_id=inventory.product_id.id, tenant_id = inventory.tenant_id.id)
+    assets=FixedAsset.objects.filter(product=inventory.product_id.id)
     for i in assets:
-        print(i.serial_number)
+        print(i.asset_id)
     # print(user_permission)
     template = 'inventory/products/product-detail-view.html'
     context = {

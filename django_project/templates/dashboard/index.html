@@ -1874,11 +1874,13 @@ section {
                     {% if app.app.name  == 'Documents' and app.status %}
                       <li><a href="{% url 'dms:filemanager-list' %}">Document Management System</a></li>
                     {% endif %}
+                    {% if app.app.name  == 'HelpDesk' and app.status %}
+                      <li><a href="{% url 'fixedassets:assetdashboard' %}">Fixed Assets Management System</a></li>
+                    {% endif %}
                     {% if app.app.name  == 'FixedAssets' and app.status %}
-                      <li><a href="{% url 'fixedassets:classification-list' %}">Fixed Assets Management System</a></li>
+                      <li><a href="{% url 'helpdesk:ticketdashboard' %}">HelpDesk Management System</a></li>
                     {% endif %}
                     
-                  
                 {% endfor %}
               {% endif %}
             </ul>

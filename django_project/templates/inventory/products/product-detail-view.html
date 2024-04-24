@@ -22,19 +22,13 @@
    
 
     {% #modal %}
-        <div class="row">
-            <div class="col-sm-12 d-flex justify-content-end mb-4" >
-                <img src="{% static 'images/brands/logo.png'%}" alt="" class="img-fluid">
-            </div>
-            <br>
-            <br>
-        </div>
+        
         <div class ="row mb-2">
             <div class="col-lg-6 col-md-6 col-sm-12">
        
                 {% #stats-card  name = "totalusers" %}
                     {% #stats-card-text name="totaltext" %}
-                        <p class="text-muted mb-2">Avialable Stock</p>
+                        <p class="text-muted mb-2">Available Stock</p>
                         <h5 class="mb-0">{{inventory.avialable_quantity}}</h5>
                     {% /stats-card-text %}
                     {% #stats-card-avatar  name="totalav"%}
@@ -93,8 +87,9 @@
                     {% #table %}
                         {% #thead %}
                             {% #tr name ="headrow" %}
-                            
+                                {% #th name ="headbatch" %}Asset ID.{% /th %}
                                 {% #th name ="headbatch" %}Serial/Chasis No.{% /th %}
+                                {% #th name ="headbatch" %}Registration No.{% /th %}
                                 {% #th name ="headintakedate" %}Description{% /th %}
                                 {% #th name ="headexpiredate" %}Status{% /th %}
                                 
@@ -103,14 +98,15 @@
                         {% #tbody %}
                             {% for data in assets  %}
                                 {% #tr name ="bodyrow" %}
-                                    
-                                    {% #td name ="sn" %}{{data.serial_number}}{% /td %}
-                                    {% #td name ="description" %}{{data.brand_id.name }} {{data.description}}{% /td %}
+                                    {% #td name ="sn" %}{{data.asset_id}}{% /td %}
+                                    {% #td name ="sn" %}{{data.chassisno}}{% /td %}
+                                    {% #td name ="sn" %}{{data.registrationnumber}}{% /td %}
+                                    {% #td name ="description" %}{{data.description}}{% /td %}
                                     {% #td name ="status" %}
-                                        {% if data.status %}
-                                            <span class="badge bg-danger">Issued</span>
+                                        {% if data.status == 'Assigned' %}
+                                            <span class="badge bg-info">{{data.status}}</span>
                                         {% else %}
-                                            <span class="badge bg-info">Avialable</span>
+                                            <span class="badge bg-primary">{{data.status}}</span>
                                         {% endif %}
                                     
                                     {% /td %}

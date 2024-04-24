@@ -83,6 +83,7 @@ INSTALLED_APPS = [
     'django_crontab',
     'django_celery_results',
     'django_celery_beat',
+    'storages',
     
 ]
 
@@ -183,13 +184,26 @@ USE_TZ = False
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
+# 
+DEFAULT_FILE_STORAGE = 'erpproject.custom_azure.AzureMediaStorage'
+# STATICFILES_STORAGE = 'erpproject.custom_azure.AzureStaticStorage'
+
+# STATIC_LOCATION = "static"
+MEDIA_LOCATION = config('azure_container')
+
+AZURE_ACCOUNT_NAME = config('account_name')
+AZURE_ACCOUNT_KEY =config('account_key')
+
+AZURE_CUSTOM_DOMAIN = f'{AZURE_ACCOUNT_NAME}.blob.core.windows.net'
+# STATIC_URL = f'https://{AZURE_CUSTOM_DOMAIN}/{STATIC_LOCATION}/'
+MEDIA_URL = f'https://{AZURE_CUSTOM_DOMAIN}/{MEDIA_LOCATION}/'
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR,'static')]
 STATIC_ROOT = os.path.join(BASE_DIR,'assets')
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+# MEDIA_URL = '/media/'
+# MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 AUTH_USER_MODEL = 'authentication.User'
 
